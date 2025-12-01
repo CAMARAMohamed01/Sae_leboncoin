@@ -82,13 +82,26 @@ class AnnonceController extends Controller
             'photos', 
             'equipements', 
             'services',
-            'tarifs'
+            'tarifs',
+            'dateEnregistrement'
         ])->findOrFail($id); // Renvoie une erreur 404 si l'ID n'existe pas
 
-        // On calcule le prix min pour l'affichage (comme sur l'accueil)
+        // On recupere le prix min pour l'affichage (comme sur l'accueil)
         // On utilise la collection chargée 'tarifs' pour ne pas refaire de requête SQL
         $prixMin = $annonce->tarifs->min('prixjour');
-
-        return view('annonces.show', compact('annonce', 'prixMin'));
+            
+        // --- NOUVEAU : Récupérer les annonces similaires US11
+    $annoncesSimilaires = Annonce::query()
+        ->with(['ville', 'typeHebergement', 'photos']) // On charge les relations pour l'affichage
+        ->withMin('tarifs', 'prixjour') // sans oublier le prix !
+        // CRITÈRE 1 : Même type d'hébergement
+        ->where('idtypehebergement', $annonce->idtypehebergement)
+        // CRITÈRE 2 : Même ville (Optionnel, on peut l'enlever si on veut elargir la zone)
+        ->where('idville', $annonce->idville)
+        // IMPORTANT : Exclure l'annonce qu'on regarde actuellement !
+        ->where('idannonce', '!=', $annonce->idannonce)
+        ->take(3) // On en prend 3 anns max simil
+        ->get();
+        return view('annonces.show', compact('annonce', 'prixMin', 'annoncesSimilaires'));
     }
 }

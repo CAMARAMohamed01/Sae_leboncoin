@@ -51,7 +51,7 @@
 
             <nav class="flex items-center gap-6 text-xs md:text-sm font-medium text-gray-600">
                 
-                <a href="{{ route('recherche.index') }}" class="flex flex-col items-center hover:text-lbc-orange transition gap-1">
+                <a class="flex flex-col items-center hover:text-lbc-orange transition gap-1">
                     <i class="fa-solid fa-magnifying-glass text-lg mb-0.5"></i>
                     <span class="hidden md:inline">Mes Recherches</span>
                 </a>
@@ -66,7 +66,7 @@
                     <span class="hidden md:inline">Messages</span>
                 </a>
 
-                <a href="#" class="flex flex-col items-center hover:text-lbc-orange transition gap-1 ml-2 border-l pl-6 border-gray-200">
+                <a href="/login" class="flex flex-col items-center hover:text-lbc-orange transition gap-1 ml-2 border-l pl-6 border-gray-200">
                     <i class="fa-regular fa-user text-lg mb-0.5"></i>
                     <span class="hidden md:inline">Se connecter</span>
                 </a>

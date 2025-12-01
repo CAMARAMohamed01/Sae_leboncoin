@@ -24,7 +24,7 @@ class LoginController extends Controller
 
     // 1. On cherche l'utilisateur dans la base par son ID
     $user = User::where('idutilisateur', $request->idutilisateur)->first();
-
+    
     // 2. On vérifie manuellement :
     // - Si l'utilisateur existe
     // - ET si le mot de passe envoyé est strictement égal (===) à celui en base

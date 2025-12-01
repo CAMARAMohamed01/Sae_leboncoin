@@ -45,7 +45,7 @@ class RechercheController extends Controller
     }
         // Pagination
         // $annonces = $query->paginate(12)->withQueryString();
-        $annonces = $query->take(50)->get();
+        $annonces = $query->get();
         $typesHebergement = TypeHebergement::all();
         
         return view('recherche.index', compact('annonces', 'typesHebergement'));

@@ -9,12 +9,16 @@
     <div class="bg-white p-6 rounded-lg shadow-md mb-4 flex-shrink-0">
         <form action="{{ route('recherche.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
             
-            <div class="flex-1">
-                <label for="localisation" class="block text-sm font-medium text-gray-700">Destination (Ville)</label>
-                <input type="text" name="localisation" id="localisation" 
-                       value="{{ request('localisation') }}"
-                       placeholder="Ex: Toulon, Paris..."
-                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="flex-1 relative">
+                <label for="localisation-input" class="block text-sm font-medium text-gray-700">Destination (Ville)</label>
+                <input type="text" name="localisation" id="localisation-input" 
+                        value="{{ request('localisation') }}"
+                        placeholder="Ex: Toulon, Paris..."
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                
+                <div id="autocomplete-results" 
+                     class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                </div>
             </div>
 
             <div class="w-full md:w-1/4">
@@ -82,7 +86,7 @@
                                     <p class="text-sm text-blue-600 font-semibold">{{ $annonce->typeHebergement->typehebergement ?? 'Logement' }}</p>
                                     <h3 class="text-lg font-bold text-gray-900 mt-1 line-clamp-1">{{ $annonce->titreannonce }}</h3>
                                 </div>
-                    
+                            
                                 <div class="text-right">
                                     @if($annonce->tarifs_min_prixjour) 
                                     <span class="block text-lg font-bold text-gray-900">{{ number_format($annonce->tarifs_min_prixjour, 0) }} €</span>
@@ -100,7 +104,7 @@
                                     </div>
                                 </div>
                             @endif
-                                    
+                                            
                             <p class="text-gray-600 text-sm mt-2 line-clamp-2">
                                 {{ $annonce->descriptionannonce }}
                             </p>
@@ -115,10 +119,19 @@
                         </div>
                     </div>
                 @empty
-                    @endforelse
+                    <div class="bg-white p-6 rounded-lg shadow border border-dashed border-gray-300 text-center col-span-1">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-semibold text-gray-900">Aucune annonce trouvée</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Veuillez ajuster votre recherche (ville, type de logement ou date).
+                        </p>
+                    </div>
+                @endforelse
             </div>
             
-            </div>
+        </div>
 
         <div class="w-full lg:w-1/2 bg-gray-100 rounded-xl overflow-hidden border border-gray-300 relative z-0 h-64 lg:h-auto">
             <div id="map" class="w-full h-full"></div>
@@ -129,13 +142,18 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var map = L.map('map').setView([46.603354, 1.888334], 6); // Centre France
+        
+        var map = L.map('map').setView([46.603354, 1.888334], 6);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
         var annonces = @json($annonces);
         var markers = [];
+
+        // CORRECTION APPLIQUÉE ICI pour l'erreur de paramètre manquant.
+        // On suppose que le paramètre de la route est 'id'.
+        var routeTemplate = "{{ route('annonces.show', ['id' => 'ID_ANNONCE_PH']) }}"; 
 
         annonces.forEach(function(annonce) {
             if(annonce.ville && annonce.ville.latitude && annonce.ville.longitude) {
@@ -147,9 +165,12 @@
                     <div class="text-center">
                         <b class="text-sm block mb-1">${annonce.titreannonce}</b>
                         <span class="text-lbc-orange font-bold text-base block">${prix}</span>
-                        <a href="/annonces/${annonce.idannonce}" class="text-blue-600 underline text-xs mt-1 block">Détails</a>
+                        <a href="${routeTemplate}" class="text-blue-600 underline text-xs mt-1 block">Détails</a>
                     </div>
                 `;
+                
+                // Remplacement du placeholder par la variable JavaScript
+                popup = popup.replace('ID_ANNONCE_PH', annonce.idannonce);
 
                 var marker = L.marker([lat, lng]).addTo(map).bindPopup(popup);
                 markers.push(marker);
@@ -160,6 +181,103 @@
             var group = new L.featureGroup(markers);
             map.fitBounds(group.getBounds().pad(0.1));
         }
+        
+        const input = document.getElementById('localisation-input');
+        const resultsContainer = document.getElementById('autocomplete-results');
+        
+        const apiUrl = "https://geo.api.gouv.fr/communes";
+        
+        let debounceTimeout;
+
+        const hideResults = () => {
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+        };
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimeout);
+            
+            const query = input.value.trim();
+
+            if (query.length < 2) {
+                hideResults();
+                return;
+            }
+
+            debounceTimeout = setTimeout(() => {
+                fetchAutocompleteResults(query);
+            }, 300); 
+        });
+
+        const fetchAutocompleteResults = async (query) => {
+            try {
+                const url = `${apiUrl}?nom=${encodeURIComponent(query)}&fields=nom,codesPostaux&limit=10&boost=population`;
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur réseau lors de la récupération des communes. Code: ' + response.status);
+                }
+
+                const communes = await response.json();
+                displayResults(communes);
+
+            } catch (error) {
+                console.error('Erreur Autocomplétion Géo-API:', error);
+                hideResults();
+            }
+        };
+
+        const displayResults = (communes) => {
+            resultsContainer.innerHTML = '';
+            
+            if (communes.length === 0) {
+                const noResult = document.createElement('div');
+                noResult.className = 'px-4 py-2 text-left text-gray-500 italic';
+                noResult.textContent = "Aucune ville trouvée.";
+                resultsContainer.appendChild(noResult);
+                resultsContainer.classList.remove('hidden');
+                return;
+            }
+            
+            resultsContainer.classList.remove('hidden');
+
+            communes.forEach(commune => {
+                const nomVille = commune.nom;
+                const codePostal = commune.codesPostaux ? commune.codesPostaux[0] : '';
+                const displayText = codePostal ? `${nomVille} (${codePostal})` : nomVille;
+
+                const item = document.createElement('div');
+                item.className = 'px-4 py-2 cursor-pointer text-left text-gray-700 hover:bg-indigo-50/50 transition truncate';
+                item.textContent = displayText;
+                
+                item.addEventListener('click', () => {
+                    input.value = nomVille; 
+                    hideResults();
+                });
+                
+                resultsContainer.appendChild(item);
+            });
+        };
+
+        document.addEventListener('click', (event) => {
+            const isClickInside = input.contains(event.target) || resultsContainer.contains(event.target);
+            if (!isClickInside) {
+                hideResults();
+            }
+        });
+        
+        input.addEventListener('focus', () => {
+            if (resultsContainer.children.length > 0 && input.value.trim().length >= 2) {
+                 resultsContainer.classList.remove('hidden');
+            }
+        });
+        
     });
 </script>
 

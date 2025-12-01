@@ -21,7 +21,7 @@
                 <button type="submit" class="Btn_Menu" style="background-color: #fca5a5;">Se déconnecter</button>
             </form>
         @else
-            <a href="{{ route('login') }}" id="Btn_Se_Connecter" class="Btn_Menu" style="text-decoration: none; text-align:center; display:inline-block;">
+            <a href="{{ route('/login') }}" id="Btn_Se_Connecter" class="Btn_Menu" style="text-decoration: none; text-align:center; display:inline-block;">
                 Se connecter
             </a>
         @endauth

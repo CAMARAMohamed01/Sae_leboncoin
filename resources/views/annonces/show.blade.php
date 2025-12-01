@@ -37,7 +37,13 @@
                 @else
                     <p class="text-gray-500 italic">Prix sur demande</p>
                 @endif
-                <p class="text-sm text-gray-500 mt-2">{{-- Date factice --}}Publiée aujourd'hui à 10:23</p>
+                <p class="text-sm text-gray-500 mt-2">
+                @if($annonce->dateEnregistrement)
+                    Publiée le {{ date('d/m/Y', strtotime($annonce->dateEnregistrement->dateacte)) }}
+                @else
+                    Date de publication inconnue
+                @endif
+                </p>
             </div>
 
             <hr class="border-gray-200">
@@ -162,5 +168,45 @@
         </div>
 
     </div>
+
+    <!-- // Annonces similaires -->
+    @if($annoncesSimilaires->isNotEmpty())
+    <div class="mt-12 border-t border-gray-200 pt-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Ces annonces peuvent vous intéresser</h2>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach($annoncesSimilaires as $similaire)
+                <a href="{{ route('annonces.show', $similaire->idannonce) }}" class="group block bg-white rounded-lg shadow-sm hover:shadow-lg transition duration-300 border border-gray-100 overflow-hidden">
+                    <div class="relative h-48 bg-gray-200 overflow-hidden">
+                        @if($similaire->photos->isNotEmpty())
+                            <img src="{{ $similaire->photos->first()->lienurl }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        @else
+                            <div class="flex items-center justify-center h-full text-gray-400 bg-gray-100"><i class="fa-regular fa-image text-3xl"></i></div>
+                        @endif
+                    </div>
+
+                    <div class="p-4">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-gray-900 truncate flex-1 group-hover:text-lbc-blue transition">{{ $similaire->titreannonce }}</h3>
+                        </div>
+
+                        @if($similaire->tarifs_min_prixjour)
+                            <p class="text-lbc-orange font-bold mt-1">
+                                {{ number_format($similaire->tarifs_min_prixjour, 0, ',', ' ') }} € 
+                                <span class="text-xs text-gray-500 font-normal">/nuit</span>
+                            </p>
+                        @else
+                            <p class="text-gray-400 text-sm italic mt-1">Prix n.c.</p>
+                        @endif
+
+                        <div class="mt-3 flex items-center text-xs text-gray-500">
+                            <i class="fa-solid fa-location-dot mr-1"></i> {{ $similaire->ville->nomville ?? 'Ville inconnue' }}
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
 @endsection

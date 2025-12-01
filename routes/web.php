@@ -52,28 +52,28 @@ Route::get('/annonce/{id}', [AnnonceController::class, 'show'])->name('annonces.
 // 5. Inscription
 // ---------------------------
 Route::get('/inscription', function () {
-    return view('inscription');
-})->name('inscription');
+    return view('inscription.inscription');
+})->name('inscription.inscription');
 
-// Page du formulaire
-Route::get('/inscription/perso', [InscriptionController::class, 'create'])
-    ->name('inscription.form');
 
-// Traitement du formulaire (C'est celle-ci qui posait problème)
-Route::post('/inscription/perso', [InscriptionController::class, 'store'])
-    ->name('inscription.traitement');
+// Personnelle
+Route::get('/perso', function () {
+    return view('inscription.inscription_perso');
+})->name('inscription.inscription.perso');
 
-// Inscription Entreprise
-Route::get('/inscription/entreprise/siret', function () {
-    return view('inscription-entreprise');
+Route::get('/perso/paramètre', function () {
+    return view('inscription.inscription_perso_para');
+})->name('inscription.perso.parametre');
+
+// Professionnel
+Route::get('/entreprise', function () {
+    // Au lieu de 'inscription_entreprise', on ajoute le dossier devant
+    return view('inscription.inscription_entreprise'); 
 })->name('inscription.entreprise');
 
-Route::post('/inscription/entreprise/info', [EntrepriseController::class, 'submitSiret'])
-    ->name('inscription.entreprise.info');
-
-    
-Route::post('/entreprise/verifier-siret', [EntrepriseController::class, 'getEntrepriseInfoAjax'])
-    ->name('entreprise.verifier_siret');
+Route::get('/entreprise/siret', function () {
+    return view('inscription.inscription_entreprise_siret');
+})->name('inscription.entreprise.siret');
 
 
 //RechercheController

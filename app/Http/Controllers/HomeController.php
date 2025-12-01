@@ -20,7 +20,7 @@ class HomeController extends Controller
                 $query->where('disponibilite', true);
             }], 'prixjour')
             ->orderBy('idannonce', 'desc')
-            ->take(4)
+            // ->take(4) pour recuperer que 4 annonces
             ->get();
 
         return view('home', compact('typesHebergement', 'dernieresAnnonces'));
