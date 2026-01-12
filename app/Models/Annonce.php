@@ -5,6 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\CompteUtilisateur;
+use App\Models\Service;
+use App\Models\Adresse;
+use App\Models\Equipement; 
+use App\Models\Dates;       
+use App\Models\PrixPeriode; 
+use App\Models\Particulier; 
+use App\Models\Avis;        
+use App\Models\Ville;       
+use App\Models\TypeHebergement; 
+use App\Models\Photo;
+
 class Annonce extends Model
 {
     use HasFactory;
@@ -13,78 +25,136 @@ class Annonce extends Model
     protected $primaryKey = "idannonce";
     public $timestamps = false;
 
-    /**
-     * Adresse de l'annonce
-     */
+    
+    
     public function adresse()
     {
-        return $this->belongsTo(Adresse::class, 'idadresse');
+        return $this->belongsTo(Adresse::class, 'idadresse', 'idadresse');
     }
-    public function definit()
+    
+    public function services()
     {
-        return $this->belongsTo(Definit::class, 'idannonce','idcalendrier');
+        return $this->belongsToMany(Service::class, 'possede', 'idannonce', 'idservice');
     }
 
-    /**
-     * Ville associée à l'annonce
-     */
     public function ville()
     {
         return $this->belongsTo(Ville::class, 'idville');
     }
 
-    /**
-     * Photos de l'annonce
-     */
     public function photos()
     {
         return $this->hasMany(Photo::class, 'idannonce');
     }
 
-    /**
-     * Prix de l'annonce
-     * (1 seul prix → hasOne ; plusieurs prix → hasMany)
-     */
-    public function prix()
+    public function conditionHebergement()
     {
-        return $this->hasMany(Definit::class, 'idannonce');
+        return $this->belongsTo(ConditionHebergement::class, 'idconditionheb', 'idconditionheb');
     }
-
-    /**
-     * Type d'hébergement
-     */
+    
     public function typeHebergement()
     {
         return $this->belongsTo(TypeHebergement::class, 'idtypehebergement');
     }
-
-    // Récupérer les équipements (Table de liaison 'peut_contenir')
+    
     public function equipements()
     {
-        // belongsToMany(ModèleCible, TablePivot, CléEtrangèreAnnonce, CléEtrangèreCible)
-        return $this->belongsToMany(TypeEquipement::class, 'peut_contenir', 'idannonce', 'idtypeequipement');
+        return $this->belongsToMany(Equipement::class, 'contient', 'idannonce', 'idequipement');
+    }
+
+    public function proprietaire()
+    {
+        return $this->belongsTo(CompteUtilisateur::class, 'idutilisateur', 'idutilisateur');
     }
 
     public function dateEnregistrement()
-{
-    // On lie le champ 'iddate' de l'annonce a la classe/model Dates
-    return $this->belongsTo(Dates::class, 'iddate', 'iddate');
-}
+    { 
+        return $this->belongsTo(Dates::class, 'iddate', 'iddate');
+    }
 
-    // Récupérer les services inclus (Table de liaison 'inclue')
-    public function services()
+    // =========================================================
+    // CORRECTION ICI : Remplacement de belongsTo par hasMany
+    // =========================================================
+    public function prixPeriodes()
     {
-        return $this->belongsToMany(TypeService::class, 'inclue', 'idannonce', 'idtypeservice');
+        // Une annonce A PLUSIEURS périodes de prix
+        return $this->hasMany(PrixPeriode::class, 'idannonce', 'idannonce');
     }
-    // tarifs
+    // =========================================================
 
-    public function tarifs(){
-        return $this->hasMany(Definit::class, 'idannonce');
+    public function rechercherpersonne(){
+        return $this->belongsTo(Particulier::class, 'idutilisateur', 'idutilisateur');
     }
 
-    /**
-     * Champs modifiables
-     */
+    public function particulier()
+    {
+        return $this->belongsTo(Particulier::class, 'idannonce', 'idannonce');
+    }
+
+    public function avis()
+    {
+        return $this->hasMany(Avis::class, 'idannonce', 'idannonce');
+    }
+
+    public function avisRelations()
+    {
+        return $this->hasMany(Avis::class, 'idutilisateur', 'idutilisateur');
+    }
+
+    public function incident()
+    {
+        return $this->hasMany(Incident::class, 'idannonce', 'idannonce');
+    }
+    public function datenondispo(){
+        return $this->hasMany(Journondisponible::class , 'idannonce','idannonce');
+    }
+
+    public function getNoteMoyenneAttributes()
+    {
+        $avis = $this->avisRelations;
+
+        if ($avis->isEmpty()) {
+            return 5; 
+        }
+        
+        return $avis->avg('note');
+    }
+
+    
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class, 'idannonce', 'idannonce');
+    }
+
+    
+    public function getJoursOccupesAttribute()
+    {
+        $joursOccupes = [];
+
+        // On prend les réservations qui bloquent le calendrier
+        $reservations = $this->reservations()
+            ->whereIn('statut_reservation', ['Acceptée', 'En attente'])
+            ->with(['dateDebut', 'dateFin']) // On charge les dates liées
+            ->get();
+
+        foreach ($reservations as $resa) {
+            // Sécurité si les dates sont manquantes
+            if (!$resa->dateDebut || !$resa->dateFin) continue;
+
+            $debut = \Carbon\Carbon::parse($resa->dateDebut->dateacte);
+            $fin = \Carbon\Carbon::parse($resa->dateFin->dateacte);
+
+            // On boucle du début à la fin pour ajouter chaque jour au tableau
+            while ($debut->lte($fin)) {
+                $joursOccupes[] = $debut->format('Y-m-d');
+                $debut->addDay();
+            }
+        }
+
+        return $joursOccupes;
+    }
+
+
     protected $fillable = [
         'idtypehebergement',
         'idconditionheb',
@@ -92,6 +162,10 @@ class Annonce extends Model
         'idville',
         'idadresse',
         'titreannonce',
-        'descriptionannonce'
+        'descriptionannonce',
+        'est_garantie'
     ];
+    protected $casts = [
+    'est_garantie' => 'boolean',
+];
 }

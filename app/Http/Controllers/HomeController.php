@@ -9,18 +9,13 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // 1. Récupérer les catégories pour le filtre
         $typesHebergement = TypeHebergement::all();
-
-        // 2. Récupérer les 4 dernieres annonces et les trier
          
         $dernieresAnnonces = Annonce::query()
             ->with(['ville', 'typeHebergement', 'photos', 'dateEnregistrement'])
-            ->withMin(['tarifs' => function ($query) {
-                $query->where('disponibilite', true);
-            }], 'prixjour')
+            ->withMin('prixPeriodes', 'prix')
             ->orderBy('idannonce', 'desc')
-            // ->take(4) pour recuperer que 4 annonces
+            ->take(16)
             ->get();
 
         return view('home', compact('typesHebergement', 'dernieresAnnonces'));

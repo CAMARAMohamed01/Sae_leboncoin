@@ -3,126 +3,88 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Entreprise;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Log; 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+use App\Models\CompteUtilisateur;
+use App\Models\Professionnel;
+use App\Models\Adresse;
+use Illuminate\Validation\Rules\Password; 
+
 
 class EntrepriseController extends Controller
 {
-    // RAPPEL : Cette méthode récupère le jeton d'accès OAuth2.
-    // Les clés client_id et client_secret doivent être dans votre fichier .env et config/services.php
-    private function getToken()
-    {
-        try {
-            $response = Http::asForm()->post('https://api.insee.fr/token', [
-                'grant_type' => 'client_credentials',
-                'client_id' => config('services.sirene.key'), 
-                'client_secret' => config('services.sirene.secret'),
-            ]);
-
-            if ($response->failed()) {
-                 Log::error("Échec de la requête de token INSEE. Statut: " . $response->status() . " | Corps: " . $response->body());
-                 return null;
-            }
-
-            return $response->json('access_token');
-        } catch (\Exception $e) {
-            Log::error("Erreur lors de la récupération du token INSEE: " . $e->getMessage());
-            return null;
-        }
-    }
-
-
-    // Méthode unique pour interroger l'API Sirene (utilisée par l'Ajax)
-    public function getEntrepriseInfo($siret)
-    {
-        // 1. OBTENIR LE JETON D'ACCÈS
-        $token = $this->getToken(); 
-
-        if (!$token) {
-            // L'échec ici signifie un problème d'authentification OAuth2
-            return null;
-        }
-
-        // 2. APPEL À L'API SIRENE AVEC LE JETON
-        $response = Http::withToken($token)
-            ->withHeaders([
-                'Accept' => 'application/json;charset=utf-8', 
-            ])
-            ->get("https://api.insee.fr/api-sirene/v3.11/siret/$siret");
-
-        if ($response->failed()) {
-            // Loggez la réponse complète de l'INSEE si la requête échoue
-            Log::warning("API SIRET échouée pour: $siret. Statut HTTP: " . $response->status() . " | Corps: " . $response->body());
-            return null;
-        }
-
-        $data = $response->json();
-        // Le SIRET peut être trouvé, mais l'établissement non spécifié dans la réponse
-        if (empty($data) || !isset($data['etablissement'])) {
-            Log::info("Aucune information d'établissement trouvée pour le SIRET $siret.");
-            return null;
-        }
-
-        return $data;
-    }
-
-
-    // MÉTHODE POUR LA VÉRIFICATION AJAX (POST /entreprise/verifier-siret)
-    public function getEntrepriseInfoAjax(Request $request)
-    {
-        $siret = $request->input('siret');
-        
-        // Validation simple
-        if (strlen($siret) !== 14 || !ctype_digit($siret)) {
-            return Response::json([
-                'success' => false, 
-                'message' => 'Le format du SIRET est incorrect (doit être 14 chiffres).'
-            ], 400);
-        }
-
-        // Tenter d'obtenir les infos via l'API
-        $data = $this->getEntrepriseInfo($siret);
-
-        if (!$data) {
-            // Échec dans getEntrepriseInfo (auth échouée OU SIRET non trouvé)
-            // Note: Le message guide l'utilisateur à vérifier le problème le plus probable (AUTH/SIRET)
-            return Response::json([
-                'success' => false, 
-                'message' => 'Vérification impossible : SIRET non trouvé, ou problème d\'accès à l\'API INSEE (vérifiez les clés OAuth2).'
-            ], 404);
-        }
-
-        // Succès : Préparation des données pour le front-end
-        $etab = $data['etablissement'];
-        $entreprise = [
-            'siret'       => $siret,
-            'nom'         => $etab['uniteLegale']['denominationUniteLegale'] ?? 
-                             $etab['uniteLegale']['sigleUniteLegale'] ?? 'N/A', 
-            'adresse'     => ($etab['adresseEtablissement']['numeroVoieEtablissement'] ?? '') . ' ' .
-                             ($etab['adresseEtablissement']['libelleVoieEtablissement'] ?? ''),
-            'ville'       => $etab['adresseEtablissement']['libelleCommuneEtablissement'] ?? 'N/A',
-            'code_postal' => $etab['adresseEtablissement']['codePostalEtablissement'] ?? 'N/A',
-        ];
-
-        return Response::json(['success' => true, 'entreprise' => $entreprise], 200);
-    }
     
-    
-    // MÉTHODE DE SOUMISSION FINALE DU FORMULAIRE DE CONFIRMATION (POST /inscription/entreprise/info)
-    public function submitSiret(Request $request)
+    public function store(Request $request)
     {
-        $request->validate([
-            'siret'       => 'required|digits:14',
-            'nom'         => 'required|string',
-            'adresse'     => 'required|string',
-            'ville'       => 'required|string',
-            'code_postal' => 'required|digits:5',
+        $request->merge([
+            'siret' => str_replace(' ', '', $request->input('siret')),
+            'telephone' => str_replace(' ', '', $request->input('telephone')),
         ]);
 
-        // Ici, insérez la logique de sauvegarde de l'entreprise en base de données.
+        $validated = $request->validate([
+            'email' => 'required|email|unique:compteutilisateur,emailutilisateur', 
+            'societe' => 'required|string|max:255',
+            'siret' => 'required|numeric|digits:14',
+            'telephone' => 'required|string|max:20', 
+            'secteur' => 'required|string|max:50',
+            
+            'adresse' => 'required|string|max:50', 
+            'cp' => 'required|string|max:10',
+            'ville' => 'required|string|max:100',
+            
+            'mdp' => 'required|min:8', 
+        ], [
+            'email.unique' => 'Cet email est déjà utilisé.',
+            'siret.digits' => 'Le SIRET doit faire 14 chiffres.',
+        ]);
 
-        return redirect('/inscription/success')->with('status', 'Inscription de l\'entreprise finalisée.');
+        try {
+            DB::beginTransaction();
+            $adresse = new Adresse();
+            $adresseString = $validated['adresse'] . ' ' . $validated['cp'] . ' ' . $validated['ville'];
+            $adresse->nomrue = Str::limit($adresseString, 50, ''); 
+            $adresse->idville = 1; 
+            $adresse->save(); 
+            $idadresse = $adresse->idadresse;
+            $compte = new CompteUtilisateur();
+            $compte->emailutilisateur = $validated['email'];
+            $compte->motdepasse = Hash::make($validated['mdp']);
+            $compte->telutilisateur = $validated['telephone'];
+            $compte->idadresse = $idadresse; 
+            $compte->solde = 0;
+            $compte->statut_rgpd = true;
+            $compte->save(); 
+            $idUtilisateur = $compte->idutilisateur;
+            $pro = new Professionnel();
+            $pro->idutilisateur = $idUtilisateur;
+            $pro->idadresse = $idadresse;
+            
+            $pro->nomprofessionnel = $validated['societe'];
+            $pro->numerosiret = $validated['siret'];
+            $pro->secteuractivite = $validated['secteur'];
+            
+            $pro->emailutilisateur = $validated['email'];
+            $pro->motdepasse = $compte->motdepasse;
+            $pro->telutilisateur = $validated['telephone'];
+            $pro->solde = 0;
+            $pro->statut_rgpd = true;
+
+            $pro->save();
+
+            DB::commit();
+
+            Auth::guard('pro')->login($pro);
+
+            return redirect()->route('home')->with('success', 'Compte professionnel créé avec succès !');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return back()->withErrors(['erreur_enregistrement' => 'Erreur critique lors de la création du compte.'])->withInput();
+ 
+        }
     }
 }

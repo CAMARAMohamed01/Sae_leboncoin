@@ -13,8 +13,9 @@ class Ville extends Model
     protected $table = 'ville';
     protected $primaryKey = 'idville';
     public $timestamps = false;
-    protected $fillable = ['nomville', 'cpville'];
-    
+    protected $fillable = ['t_108', 'codeinsee','nomville','cpville','idregion'];
+    use HasFactory;
+
     public function annonces()
     {
         return $this->hasMany(Annonce::class, 'idville');
