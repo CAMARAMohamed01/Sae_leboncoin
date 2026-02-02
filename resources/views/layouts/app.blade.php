@@ -178,14 +178,10 @@
         const driver = window.driver.js.driver;
         let steps = [];
 
-        // DÉTECTION DE LA PAGE
         const isAnnoncePage = document.getElementById('gallery-trigger');
         const isHomePage = document.getElementById('home-search-bar');
         const isSearchPage = document.getElementById('search-filters');
 
-        // =========================================================
-        // SCÉNARIO 1 : PAGE D'ACCUEIL (HOME)
-        // =========================================================
         if (isHomePage) {
             steps.push({
                 element: '#logo-home',
@@ -216,10 +212,6 @@
             );
         }
 
-        // =========================================================
-        // SCÉNARIO 2 : PAGE DÉTAIL ANNONCE
-        // (Pas de bouton "Déposer" ici, focus sur le bien)
-        // =========================================================
         else if (isAnnoncePage) {
             steps.push(
                 { element: '#gallery-trigger', popover: { title: 'Photos', description: 'Cliquez pour afficher la galerie en grand format.', side: 'bottom' } },
@@ -230,7 +222,6 @@
                 { element: '#sidebar-owner', popover: { title: 'Vendeur', description: 'Profil du propriétaire et avis.', side: 'left' } }
             );
             
-            // Navigation & Outils
             steps.push({ element: '#logo-home', popover: { title: 'Accueil', description: 'Retour à la page d\'accueil.', side: 'bottom' } });
             steps.push(
                 { element: '#nav-favoris', popover: { title: 'Favoris', description: 'Sauvegarder cette annonce.', side: 'bottom' } },
@@ -243,19 +234,14 @@
                 steps.push({ element: '#nav-connexion', popover: { title: 'Connexion', description: 'Se connecter.', side: 'bottom' } });
             }
 
-            // Footer
             steps.push(
                 { element: '#footer-faq', popover: { title: 'Aide', description: 'Consulter la FAQ.', side: 'top' } },
                 { element: '#footer-contact', popover: { title: 'Contact', description: 'Contacter le support.', side: 'top' } }
             );
         }
 
-        // =========================================================
-        // SCÉNARIO 3 : PAGE DE RECHERCHE
-        // (Intègre les éléments permanents + spécificités recherche)
-        // =========================================================
         else if (isSearchPage) {
-            // 1. Les Filtres
+            // Filtres
             steps.push({
                 element: '#search-filters',
                 popover: { title: 'Filtres', description: 'Définissez votre destination, vos dates et le type de logement.', side: 'bottom' }
@@ -269,7 +255,7 @@
                 popover: { title: 'Sauvegarder', description: 'Enregistrez cette recherche pour plus tard.', side: 'bottom' }
             });
 
-            // 2. Les Résultats
+            // Résultats
             steps.push({
                 element: '#results-container',
                 popover: { title: 'Résultats', description: 'Liste des annonces correspondantes.', side: 'right' }
@@ -279,7 +265,6 @@
                 popover: { title: 'Carte', description: 'Vue géographique des résultats.', side: 'left' }
             });
 
-            // 3. Éléments Permanents (Logo, Dépot, Compte, Footer)
             steps.push({
                 element: '#logo-home',
                 popover: { title: 'Accueil', description: 'Retour à la page d\'accueil.', side: 'bottom' }
@@ -301,18 +286,13 @@
             );
         }
 
-        // =========================================================
-        // SCÉNARIO 4 : AUTRES PAGES (Défaut)
-        // =========================================================
         else {
             steps.push({ element: '#logo-home', popover: { title: 'Accueil', description: 'Retour à l\'accueil.', side: 'bottom' } });
             
-            // Sidebar profil si présente
             if (document.getElementById('profil-sidebar')) {
                 steps.push({ element: '#profil-sidebar', popover: { title: 'Menu', description: 'Menu de gestion du compte.', side: 'right' } });
             }
 
-            // Éléments permanents
             steps.push({
                 element: '#btn-deposer-annonce',
                 popover: { title: 'Vendre', description: 'Déposer une annonce.', side: 'bottom' }
@@ -330,7 +310,6 @@
             );
         }
 
-        // Lancement
         const driveObj = driver({
             showProgress: true,
             animate: true,

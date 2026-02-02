@@ -14,20 +14,18 @@ class Message extends Model
 
     protected $fillable = [
         'idannonce',
-        'idutilisateur',      // L'expéditeur
-        'com_idutilisateur',  // Le destinataire
+        'idutilisateur',      
+        'com_idutilisateur',  
         'idreservation',
         'contenu',
         'dateenvoi'
     ];
 
-    // L'expéditeur
     public function expediteur()
     {
         return $this->belongsTo(CompteUtilisateur::class, 'idutilisateur', 'idutilisateur');
     }
 
-    // Le destinataire
     public function destinataire()
     {
         return $this->belongsTo(CompteUtilisateur::class, 'com_idutilisateur', 'idutilisateur');

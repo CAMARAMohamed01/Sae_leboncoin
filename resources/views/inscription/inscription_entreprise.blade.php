@@ -64,33 +64,25 @@
     const siretInput = document.getElementById('siret_search');
 
     siretInput.addEventListener('input', function(e) {
-        // 1. Récupérer la valeur actuelle et enlever tous les caractères non numériques
         let value = e.target.value.replace(/\D/g, ''); 
         
-        // 2. Limiter la valeur à 14 chiffres (au cas où maxlength ne serait pas supporté)
         value = value.substring(0, 14);
 
-        // 3. Appliquer le formatage du SIRET (3 3 3 5) avec des espaces
         let formattedValue = '';
         
         if (value.length > 0) {
-            // Groupe 1: Les 3 premiers chiffres
             formattedValue += value.substring(0, 3);
         }
         if (value.length > 3) {
-            // Groupe 2: Les 3 suivants, avec un espace avant
             formattedValue += ' ' + value.substring(3, 6);
         }
         if (value.length > 6) {
-            // Groupe 3: Les 3 suivants, avec un espace avant
             formattedValue += ' ' + value.substring(6, 9);
         }
         if (value.length > 9) {
-            // Groupe 4: Les 5 derniers chiffres, avec un espace avant
             formattedValue += ' ' + value.substring(9, 14);
         }
 
-        // 4. Mettre à jour la valeur de l'input avec le formatage
         e.target.value = formattedValue;
     });
 });

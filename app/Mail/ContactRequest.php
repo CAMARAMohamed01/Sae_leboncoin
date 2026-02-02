@@ -16,7 +16,6 @@ class ContactRequest extends Mailable
     public $data;
     public $filePath;
 
-    // On récupère les données et le chemin du fichier (s'il y en a un)
     public function __construct($data, $filePath = null)
     {
         $this->data = $data;
@@ -32,7 +31,6 @@ class ContactRequest extends Mailable
 
     public function content(): Content
     {
-        // On va créer cette vue juste après
         return new Content(
             view: 'emails.contact',
         );

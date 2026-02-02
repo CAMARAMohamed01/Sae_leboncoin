@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class RGPDController extends Controller
 {
-    /**
-     * Tableau de bord DPO
-     */
     public function index(Request $request)
     {
         $currentUser = Auth::user();
@@ -28,7 +25,6 @@ class RGPDController extends Controller
             ->whereNotIn('role', ['admin', 'dpo'])
             ->with(['particulier', 'professionnel']);
 
-        // Filtres (Date création, Dernière connexion, Email)
         if ($request->filled('date_limite')) {
             $dateLimite = Carbon::parse($request->date_limite);
             $query->where('date_creation', '<=', $dateLimite);
@@ -48,15 +44,11 @@ class RGPDController extends Controller
             $usersCibles = $query->orderBy('date_creation', 'asc')->get();
         }
 
-        // On passe $dateLimite à la vue même s'il est null (pour éviter l'erreur variable undefined)
         $dateLimite = $request->filled('date_limite') ? Carbon::parse($request->date_limite) : null;
 
         return view('admin.rgpd.index', compact('usersCibles', 'hasSearch', 'dateLimite'));
     }
 
-    /**
-     * Exécuter l'anonymisation sur une SÉLECTION
-     */
     public function anonymiser(Request $request)
     {
         $currentUser = Auth::user();
@@ -91,7 +83,6 @@ class RGPDController extends Controller
             return back()->withErrors(['error' => "Accès refusé."]); 
         }
 
-        // Validation
         $request->validate([
             'selected_users' => 'required|array|min:1',
             'selected_users.*' => 'exists:compteutilisateur,idutilisateur',
@@ -100,7 +91,6 @@ class RGPDController extends Controller
             'selected_users.required' => 'Veuillez sélectionner au moins un compte à supprimer.',
         ]);
 
-        // Récupération sécurisée (hors admins)
         $users = CompteUtilisateur::whereIn('idutilisateur', $request->selected_users)
             ->whereNotIn('role', ['admin', 'dpo']) 
             ->get();
@@ -108,11 +98,9 @@ class RGPDController extends Controller
         $count = 0;
         foreach ($users as $user) {
             try {
-                // Appel de la méthode de suppression totale définie dans le modèle
                 $user->supprimerTotalement();
                 $count++;
             } catch (\Exception $e) {
-                // En cas d'erreur technique sur un utilisateur, on continue les autres
                 Log::error("Erreur suppression user {$user->idutilisateur}: " . $e->getMessage());
             }
         }
@@ -121,21 +109,18 @@ class RGPDController extends Controller
             ->with('success', "Opération terminée. $count utilisateurs et toutes leurs données ont été supprimés définitivement de la base.");
     }
 
-    /**
-     * Lister les demandes de suppression reçues des utilisateurs
-     */
     public function listeDemandes()
     {
         $currentUser = Auth::user();
         
-        // Sécurité : Réservé au DPO ou ID 433 spécifiquement
+        // Sécurité DPO
         if (!$currentUser->isDPO() && $currentUser->idutilisateur != 433) {
             return redirect()->route('home')->withErrors(['error' => "Accès réservé au DPO."]);
         }
 
-        // Récupérer les demandes en attente avec les infos de l'utilisateur
+        // infos utilisateur
         $demandes = DemandeSuppression::where('statut', 'En attente')
-            ->with(['utilisateur.particulier', 'utilisateur.professionnel']) // Charger les relations pour afficher les noms
+            ->with(['utilisateur.particulier', 'utilisateur.professionnel'])
             ->orderBy('date_demande', 'asc')
             ->get();
 
@@ -144,9 +129,6 @@ class RGPDController extends Controller
 
     
 
-    /**
-     * Valider une demande spécifique (Exécuter l'anonymisation)
-     */
     public function validerDemande($idDemande)
     {
         $currentUser = Auth::user();
@@ -160,11 +142,9 @@ class RGPDController extends Controller
         $user = $demande->utilisateur;
 
         if ($user) {
-            // Exécuter l'anonymisation réelle (méthode du modèle CompteUtilisateur)
             $user->anonymiser();
         }
 
-        // Marquer la demande comme traitée pour qu'elle disparaisse de la liste
         $demande->statut = 'Traitée';
         $demande->save();
 

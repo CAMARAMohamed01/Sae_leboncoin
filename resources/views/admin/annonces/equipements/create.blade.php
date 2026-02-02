@@ -13,7 +13,6 @@
         <form action="{{ route('admin.annonces.equipements.store') }}" method="POST" class="space-y-8">
             @csrf
 
-            <!-- SECTION 1 : Définition -->
             <div>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Détails</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -36,7 +35,7 @@
 
             <hr class="border-gray-100">
 
-            <!-- SECTION 2 : Liaison (Optionnel) -->
+
             <div>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Lier à des annonces existantes (Optionnel)</h2>
                 <p class="text-sm text-gray-500 mb-4">Sélectionnez les annonces qui possèdent déjà cet équipement.</p>

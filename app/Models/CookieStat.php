@@ -12,5 +12,11 @@ class CookieStat extends Model
     protected $primaryKey = 'idstat';
     public $timestamps = false;
 
-    protected $fillable = ['choix', 'date_action'];
+
+    protected $fillable = ['choix', 'date_action', 'idutilisateur'];
+
+public function utilisateur()
+    {
+        return $this->belongsTo(CompteUtilisateur::class, 'idutilisateur', 'idutilisateur');
+    }
 }

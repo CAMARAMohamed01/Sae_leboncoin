@@ -163,21 +163,17 @@
         const inputStart = document.getElementById('date_arrivee');
         const inputEnd = document.getElementById('date_depart');
         
-        // Inputs Voyageurs
         const inputAdulte = document.getElementById('nbadulte');
         const inputEnfant = document.getElementById('nbenfant');
         const capacityError = document.getElementById('capacity-error');
         const btnSubmit = document.getElementById('submit-btn');
         const maxCapacity = {{ $reservation->annonce->capacite }};
 
-        // Affichage Prix
         const displayNights = document.getElementById('display-nights');
         const displayTotal = document.getElementById('calc-total');
         const displaySubtotal = document.getElementById('calc-subtotal');
         const displayFees = document.getElementById('calc-fees');
         
-        // Données PHP
-        // is_numeric pour éviter le bug si prixNuit est null
         const pricePerNight = {{ is_numeric($prixNuit) ? $prixNuit : 0 }}; 
         const feesPercentage = 0.10;
 
@@ -200,10 +196,9 @@
             const startVal = inputStart.value;
             const endVal = inputEnd.value;
             
-            // Vérification capacité avant tout
             const totalHumans = parseInt(inputAdulte.value || 0) + parseInt(inputEnfant.value || 0);
             if (totalHumans > maxCapacity) {
-                return; // On ne calcule pas si capacité dépassée
+                return; 
             }
 
             if (startVal && endVal) {
@@ -236,19 +231,15 @@
             displayTotal.innerText = "0";
         }
 
-        // Listeners Dates
         inputStart.addEventListener('change', function() {
-            // Mettre à jour min de date de fin
             if(inputEnd) inputEnd.min = this.value;
             calculateTotal();
         });
         if(inputEnd) inputEnd.addEventListener('change', calculateTotal);
 
-        // Listeners Voyageurs
         if(inputAdulte) inputAdulte.addEventListener('input', checkCapacity);
         if(inputEnfant) inputEnfant.addEventListener('input', checkCapacity);
         
-        // Calcul initial au chargement de la page
         checkCapacity();
     });
 </script>

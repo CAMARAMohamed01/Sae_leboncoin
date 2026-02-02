@@ -16,14 +16,12 @@
         <span class="text-gray-800">{{ $annonce->ville->nomville ?? 'France' }}</span>
     </nav>
 
-    <!-- Message de succès -->
     @if(session('success'))
         <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
             <i class="fa-solid fa-check-circle"></i> {{ session('success') }}
         </div>
     @endif
 
-    <!-- Message d'erreur -->
     @if($errors->any())
         <div class="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center gap-2">
             <i class="fa-solid fa-circle-exclamation"></i> {{ $errors->first() }}
@@ -398,7 +396,6 @@
                 </div>
 
                 @php
-                    // On cherche s'il existe un avis expert positif dans la liste des avis liés
                     $avisExpertPositif = $annonce->avis->firstWhere('avis_expert', 'Positif');
                 @endphp
 

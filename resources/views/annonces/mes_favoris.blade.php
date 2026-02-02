@@ -24,7 +24,7 @@
                                 <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100"><i class="fa-solid fa-image text-3xl"></i></div>
                             @endif
                             <div class="absolute top-2 right-2 text-red-500 bg-white rounded-full p-1.5 shadow-sm">
-                                <i class="fa-solid fa-heart"></i> <!-- Coeur plein -->
+                                <i class="fa-solid fa-heart"></i>
                             </div>
                         </div>
                         <div class="p-4">

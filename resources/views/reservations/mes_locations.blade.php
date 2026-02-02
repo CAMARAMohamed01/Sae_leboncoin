@@ -146,13 +146,11 @@
                             @php
                                 $msgNonRepondus = 0;
                                 if(isset($resa->messages) && $resa->messages->count() > 0) {
-                                    // On regarde les messages du plus récent au plus ancien
                                     foreach($resa->messages->sortByDesc('dateenvoi') as $msg) {
-                                        // Si le message ne vient PAS de moi (le locataire), c'est une réponse du proprio non lue
                                         if ($msg->idutilisateur != Auth::id()) {
                                             $msgNonRepondus++;
                                         } else {
-                                            break; // J'ai parlé en dernier, donc c'est "lu"
+                                            break; 
                                         }
                                     }
                                 }
@@ -212,7 +210,6 @@
         const form = document.getElementById('contact-form-' + id);
         form.classList.toggle('hidden');
         
-        // Scroll automatique vers le bas de la discussion à l'ouverture
         if (!form.classList.contains('hidden')) {
             const chatContainer = form.querySelector('.chat-container');
             if (chatContainer) {

@@ -132,13 +132,11 @@
                             {{-- LOGIQUE DE NOTIFICATION MESSAGERIE "EN ATTENTE DE REPONSE" --}}
                             @php
                                 $msgNonRepondus = 0;
-                                // On parcourt les messages du plus récent au plus ancien (reverse)
-                                // Si on croise un message du proprio, on arrête (c'est répondu)
                                 foreach($resa->messages->sortByDesc('dateenvoi') as $msg) {
                                     if ($msg->idutilisateur != Auth::id()) {
                                         $msgNonRepondus++;
                                     } else {
-                                        break; // J'ai répondu, donc le compteur s'arrête
+                                        break;
                                     }
                                 }
                             @endphp

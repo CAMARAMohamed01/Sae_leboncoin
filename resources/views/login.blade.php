@@ -97,7 +97,6 @@
       data-callback="handleCredentialResponse"
       data-client_id="PUT_YOUR_WEB_CLIENT_ID_HERE"
     ></div>
-    <!-- g_id_signin places the button on a page and supports customization -->
     <div class="g_id_signin"></div>
 </div>
 @endsection

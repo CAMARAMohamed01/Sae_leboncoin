@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\NouvelleDemandeReservation;
-
 use App\Models\Reservation;
 use App\Models\Annonce;
 use App\Models\Dates;
@@ -20,9 +19,6 @@ use Stripe\Checkout\Session;
 use App\Models\Message;
 class ReservationController extends Controller
 {
-    /**
-     * Affiche la liste des locations (réservations) de l'utilisateur connecté
-     */
     public function mesLocations()
     {
         $user = Auth::user();
@@ -41,32 +37,24 @@ class ReservationController extends Controller
         return view('reservations.mes_locations', compact('reservations'));
     }
 
-    /**
-     * 1. Affiche le formulaire de réservation
-     */
     public function create($id)
     {
         $annonce = Annonce::with(['ville', 'photos', 'prixPeriodes', 'proprietaire'])->findOrFail($id);
-        
-        // On récupère le prix de base (sécurité si null)
+
         $prixNuit = $annonce->prixPeriodes->min('prix') ?? 0;
 
         return view('reservations.create', compact('annonce', 'prixNuit'));
     }
 
-    /**
-     * 2. Traite la demande de réservation (CORRIGÉ)
-     */
     public function store(Request $request, $id)
     {
         $annonce = Annonce::findOrFail($id);
         $user = Auth::user();
 
-        // 1. Validation avec les nouveaux champs détaillés
         $request->validate([
             'date_arrivee' => 'required|date|after_or_equal:today',
             'date_depart'  => 'required|date|after:date_arrivee',
-            'nbadulte'     => 'required|integer|min:1', // Au moins 1 adulte obligatoire
+            'nbadulte'     => 'required|integer|min:1', 
             'nbenfant'     => 'nullable|integer|min:0',
             'nbbebe'       => 'nullable|integer|min:0',
             'nbanimeaux'   => 'nullable|integer|min:0',
@@ -78,16 +66,13 @@ class ReservationController extends Controller
         try {
             DB::beginTransaction();
 
-            // 2. Gestion du Locataire (Création si inexistant)
             $locataire = $user->locataire;
             if (!$locataire) {
-                // Création à la volée du profil locataire si l'utilisateur n'en a pas
                 $dateNaiss = $user->particulier->datenaissance ?? now();
 
                 $locataire = Locataire::create([
                     'idutilisateur' => $user->idutilisateur,
                     'idparticulier' => $user->particulier->idparticulier ?? null,
-                    // SUPPRESSION DES CHAMPS QUI BLOQUAIENT (nomlocateur, prenomlocateur)
                     'telutilisateur' => $user->telutilisateur,
                     'solde' => $user->solde ?? 0,
                     'datenaissance' => $dateNaiss,
@@ -96,31 +81,25 @@ class ReservationController extends Controller
                 ]);
             }
 
-            // 3. Gestion des Dates (Table 'dates')
             $dateDebut = Dates::firstOrCreate(['dateacte' => $request->date_arrivee]);
             $dateFin = Dates::firstOrCreate(['dateacte' => $request->date_depart]);
 
-            // 4. Calculs de durée
             $start = Carbon::parse($request->date_arrivee);
             $end = Carbon::parse($request->date_depart);
             $nbJours = $start->diffInDays($end);
 
-            // 5. Création de la Réservation
             $reservation = new Reservation();
             $reservation->idannonce = $annonce->idannonce;
             $reservation->idutilisateur = $user->idutilisateur;
             $reservation->idlocateur = $locataire->idlocateur; 
             
-            // Correction pour la colonne idparticulier si elle est requise
             $reservation->idparticulier = $locataire->idparticulier;
 
             $reservation->iddate = $dateDebut->iddate;
             $reservation->dat_iddate = $dateFin->iddate;
-            // $reservation->date_reservation = Carbon::now(); // Colonne retirée car inexistante en BDD
             
             $reservation->nbjours = $nbJours;
             
-            // Enregistrement détaillé des voyageurs
             $reservation->nbadulte = $request->nbadulte; 
             $reservation->nbenfant = $request->nbenfant ?? 0;
             $reservation->nbanimeaux = $request->nbanimeaux ?? 0;
@@ -133,50 +112,39 @@ class ReservationController extends Controller
             DB::commit();
 
 
-            // 7. Redirection vers le paiement
             return redirect()->route('reservations.payment', $reservation->idreservation);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            // Retourne sur la page avec l'erreur visible
             return back()->withErrors(['error' => "Erreur lors de la réservation : " . $e->getMessage()])->withInput();
         }
     }
 
-    /**
-     * 3. Affiche la page de paiement
-     */
     public function showPayment($id)
     {
-        // On charge 'reglements' pour savoir ce qui a déjà été payé
         $reservation = Reservation::with(['annonce.prixPeriodes', 'reglements'])->findOrFail($id);
         
         if ($reservation->idutilisateur !== Auth::id()) {
             return redirect()->route('home')->withErrors(['error' => 'Accès non autorisé']);
         }
 
-        // 1. Calcul du coût total théorique
         $prixNuit = $reservation->annonce->prixPeriodes->min('prix') ?? 0;
         $totalSejour = $prixNuit * $reservation->nbjours;
         $frais = round($totalSejour * 0.10, 2);
         $nouveauTotal = $totalSejour + $frais;
 
-        // 2. Calcul du montant déjà réglé
         $dejaPaye = $reservation->reglements->sum('montant');
 
-        // 3. Calcul du reste à payer (Supplément)
         $resteAPayer = max(0, $nouveauTotal - $dejaPaye);
 
-        // Si tout est réglé, inutile de payer, on renvoie vers la liste
         if ($resteAPayer <= 0) {
              return redirect()->route('reservations.mes_locations')
                              ->with('success', 'Aucun paiement nécessaire. Votre réservation est à jour.');
         }
 
-        // On passe 'resteAPayer' comme 'totalAPayer' pour la vue de paiement
         return view('reservations.paiement', [
             'reservation' => $reservation,
-            'totalAPayer' => $resteAPayer, // Ce sera le montant affiché sur le bouton payer
+            'totalAPayer' => $resteAPayer, 
             'frais' => $frais,
             'total' => $totalSejour,
             'dejaPaye' => $dejaPaye,
@@ -185,12 +153,9 @@ class ReservationController extends Controller
     }
 
 
-    /**
-     * Simuler un Traite de paiement
-     */
+    
    public function processPayment(Request $request, $id)
     {
-        // On charge les règlements pour vérifier si c'est un supplément
         $reservation = Reservation::with(['annonce.proprietaire', 'reglements'])->findOrFail($id);
 
         if ($reservation->idutilisateur !== Auth::id()) {
@@ -200,9 +165,7 @@ class ReservationController extends Controller
         try {
             DB::beginTransaction();
 
-            // Détection supplément
             $dejaPaye = $reservation->reglements->sum('montant');
-            // Si déjà payé quelque chose > 0, alors c'est un supplément
             $labelMode = $dejaPaye > 0 ? 'CB (Supplément)' : 'Carte Bancaire';
 
             Reglement::create([
@@ -213,7 +176,6 @@ class ReservationController extends Controller
                 'statut_reglament' => 'Validé'
             ]);
 
-            // Créditer le propriétaire
             $proprietaire = $reservation->annonce->proprietaire;
             if ($proprietaire) {
                 $proprietaire->solde += $request->montant_total;
@@ -253,7 +215,7 @@ class ReservationController extends Controller
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'eur',
-                    'unit_amount' => (int)($montantAPayer * 100), // Centimes
+                    'unit_amount' => (int)($montantAPayer * 100),
                     'product_data' => [
                         'name' => 'Réservation : ' . $reservation->annonce->titreannonce,
                     ],
@@ -267,15 +229,10 @@ class ReservationController extends Controller
         return redirect($checkout_session->url);
     }
 
-    /**
-     * RETOUR SUCCÈS STRIPE
-     * Valide le paiement en base de données au retour de Stripe
-     */
+
     public function paiementSuccess(Request $request, $id) {
-        // On charge explicitement annonce.proprietaire pour pouvoir créditer son solde
         $reservation = Reservation::with(['annonce.proprietaire', 'annonce.prixPeriodes', 'reglements'])->findOrFail($id);
         
-        // Recalcul du montant qui vient d'être payé (car Stripe ne le renvoie pas directement en GET simple)
         $prixNuit = $reservation->annonce->prixPeriodes->min('prix') ?? 0;
         $total = ($prixNuit * $reservation->nbjours) * 1.10;
         $dejaPaye = $reservation->reglements->sum('montant');
@@ -283,20 +240,17 @@ class ReservationController extends Controller
 
         if ($montantPaye > 0) {
             DB::transaction(function () use ($reservation, $montantPaye) {
-                // Détection supplément pour le libellé
                 $dejaPayeCount = $reservation->reglements->count();
                 $label = $dejaPayeCount > 0 ? 'Stripe (Supplément)' : 'Stripe CB';
 
-                // A. Créer le règlement
                 Reglement::create([
                     'idreservation' => $reservation->idreservation,
                     'idutilisateur' => Auth::id(),
-                    'modereglement' => substr($label, 0, 20), // Coupe à 20 chars pour respecter la BDD
+                    'modereglement' => substr($label, 0, 20), 
                     'montant' => $montantPaye,
                     'statut_reglament' => 'Validé'
                 ]);
 
-                // B. Créditer le propriétaire
                 $proprietaire = $reservation->annonce->proprietaire;
                 if ($proprietaire) {
                     $proprietaire->solde += $montantPaye;
@@ -309,9 +263,6 @@ class ReservationController extends Controller
                          ->with('success', 'Paiement Stripe validé ! Votre réservation est confirmée.');
     }
 
-    /**
-     * RETOUR ANNULATION STRIPE
-     */
     public function paiementCancel($id)
     {
         return redirect()->route('reservations.payment', $id)
@@ -319,10 +270,6 @@ class ReservationController extends Controller
     }
 
 
-
-    /**
-     * Affiche le formulaire de modification
-     */
     public function edit($id)
     {
         $reservation = Reservation::with(['annonce.prixPeriodes', 'annonce.ville', 'annonce.photos', 'dateDebut', 'dateFin'])
@@ -344,7 +291,6 @@ class ReservationController extends Controller
 
      public function update(Request $request, $id)
     {
-        // On charge les relations nécessaires (prix, reglements)
         $reservation = Reservation::with(['annonce.prixPeriodes', 'reglements'])->findOrFail($id);
 
         if ($reservation->idutilisateur !== Auth::id()) {
@@ -372,7 +318,6 @@ class ReservationController extends Controller
             $end = Carbon::parse($request->date_depart);
             $nouveauxJours = $start->diffInDays($end);
 
-            // Mise à jour BDD
             $reservation->iddate = $dateDebut->iddate;
             $reservation->dat_iddate = $dateFin->iddate;
             $reservation->nbjours = $nouveauxJours;
@@ -384,16 +329,12 @@ class ReservationController extends Controller
 
             DB::commit();
 
-            // --- VÉRIFICATION FINANCIÈRE ---
             $prixNuit = $reservation->annonce->prixPeriodes->min('prix') ?? 0;
-            $nouveauTotal = ($prixNuit * $nouveauxJours) * 1.10; // +10% frais
+            $nouveauTotal = ($prixNuit * $nouveauxJours) * 1.10; 
             
-            // Calcul de ce qui a déjà été payé
             $dejaPaye = $reservation->reglements->sum('montant');
 
-            // Si le nouveau total est plus élevé, on doit payer la différence
             if ($nouveauTotal > $dejaPaye) {
-                // On redirige vers le paiement, on ne paie pas automatiquement ici
                 return redirect()->route('reservations.payment', $reservation->idreservation)
                                  ->with('warning', 'Modification enregistrée. Un supplément est nécessaire pour valider les nouvelles dates.');
             }
@@ -411,7 +352,6 @@ class ReservationController extends Controller
         $user = Auth::user();
         $reservation = Reservation::with('annonce.proprietaire')->findOrFail($id);
 
-        // Sécurité : Seul le locataire (ou le proprio) peut écrire
         if ($reservation->idutilisateur !== $user->idutilisateur && $reservation->annonce->idutilisateur !== $user->idutilisateur) {
             return back()->withErrors(['error' => "Action non autorisée."]);
         }
@@ -420,17 +360,15 @@ class ReservationController extends Controller
             'message' => 'required|string|max:1000'
         ]);
 
-        // Déterminer le destinataire
         $destinataireId = ($user->idutilisateur === $reservation->idutilisateur) 
             ? $reservation->annonce->proprietaire->idutilisateur 
             : $reservation->idutilisateur;
 
-        // Création du message lié à la réservation
         Message::create([
             'idannonce' => $reservation->idannonce,
-            'idreservation' => $reservation->idreservation, // Lien vital
-            'idutilisateur' => $user->idutilisateur,         // Expéditeur
-            'com_idutilisateur' => $destinataireId,          // Destinataire
+            'idreservation' => $reservation->idreservation, 
+            'idutilisateur' => $user->idutilisateur,         
+            'com_idutilisateur' => $destinataireId,          
             'contenu' => $request->message,
             'dateenvoi' => Carbon::now()
         ]);

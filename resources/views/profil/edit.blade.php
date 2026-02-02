@@ -6,18 +6,15 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex flex-col md:flex-row gap-8 max-w-5xl mx-auto">
         
-        <!-- SIDEBAR GAUCHE (Menu & Résumé) -->
         <div id="profil-sidebar" class="w-full md:w-1/3 lg:w-1/4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
                 
                 <div class="flex flex-col items-center text-center mb-6">
-                    <!-- AVATAR DYNAMIQUE (Sidebar) -->
+
                     <div class="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center text-3xl text-gray-400 font-bold uppercase mb-3 relative group">
                         @if($user->photo)
-                            <!-- Affichage de l'image stockée -->
                             <img src="{{ asset($user->photo->lienurl) }}" alt="Avatar" class="w-full h-full object-cover">
                         @else
-                            <!-- Affichage des initiales par défaut -->
                             {{ substr($user->particulier->prenomparticulier ?? ($user->professionnel->nomprofessionnel ?? 'U'), 0, 1) }}
                         @endif
                     </div>
@@ -107,6 +104,11 @@
                         <a href="{{ route('admin.annonces.types.index') }}" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition font-medium">
                             <i class="fa-solid fa-hotel text-orange-500 w-5"></i> 
                             Gérer Types Hébergement
+                        </a>
+                        
+                        <a href="{{ route('admin.annonces.validation') }}" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition font-medium">
+                            <i class="fa-solid fa-check text-orange-500 w-5"></i> 
+                            Validation des Annonces
                         </a>
                     @endif
                     @if($user->isServiceJuridique())
@@ -394,7 +396,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- AUTOCOMPLÉTION ADRESSE INTELLIGENTE ---
         const streetInput = document.getElementById('nom_rue');
         const numberInput = document.getElementById('numero_voie');
         const zipInput = document.getElementById('code_postal');
@@ -409,7 +410,6 @@
 
                 if (query.length > 3) {
                     timeout = setTimeout(() => {
-                        // On cherche avec "q" pour avoir l'adresse complète
                         fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`)
                             .then(response => response.json())
                             .then(data => {
@@ -423,7 +423,6 @@
                                         div.textContent = feature.properties.label;
                                         
                                         div.addEventListener('click', function() {
-                                            // Remplissage intelligent des champs
                                             if (feature.properties.housenumber) {
                                                 numberInput.value = feature.properties.housenumber;
                                             }

@@ -5,7 +5,6 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     
-    <!-- En-tête : Titre + Bouton Ajouter -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-[#1f2d3d] font-sans">Mes annonces</h1>
@@ -16,7 +15,6 @@
         </a>
     </div>
         
-    <!-- Message de succès (Suppression réussie) -->
     @if(session('success'))
         <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 shadow-sm">
             <i class="fa-solid fa-check-circle text-lg"></i> 
@@ -24,7 +22,6 @@
         </div>
     @endif
 
-    <!-- Message d'erreur (Impossible de supprimer) -->
     @if($errors->any())
         <div class="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-start gap-2 shadow-sm">
             <i class="fa-solid fa-circle-exclamation text-lg mt-0.5"></i>
@@ -34,9 +31,7 @@
         </div>
     @endif
 
-    <!-- Liste des annonces -->
     @if($annonces->isEmpty())
-        <!-- Cas Vide -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
             <div class="mb-4 text-gray-300">
                 <i class="fa-regular fa-folder-open text-6xl"></i>
@@ -48,11 +43,10 @@
             </a>
         </div>
     @else
-        <!-- Cas Rempli : Grille -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($annonces as $annonce)
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition group">
-                    <!-- Image -->
+
                     <div class="relative h-48 bg-gray-200 overflow-hidden">
                         @if($annonce->photos->isNotEmpty())
                             <img src="{{ $annonce->photos->first()->lienurl }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
@@ -61,14 +55,12 @@
                                 <i class="fa-regular fa-image text-3xl"></i>
                             </div>
                         @endif
-                        
-                        <!-- Badge Statut -->
+
                         <div class="absolute top-2 right-2 bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-md border border-green-200">
                             {{ $annonce->statutannonce ?? 'En ligne' }}
                         </div>
                     </div>
 
-                    <!-- Contenu -->
                     <div class="p-4">
                         <h3 class="font-bold text-gray-900 truncate mb-1">{{ $annonce->titreannonce }}</h3>
                         <p class="text-sm text-gray-500 mb-3">{{ $annonce->ville->nomville ?? 'Ville inconnue' }}</p>
@@ -82,22 +74,16 @@
                                     <span class="text-xs text-gray-400 italic">Prix n.c.</span>
                                 @endif
                             </div>
-<!--                             
-                            <a href="{{ route('annonces.show', $annonce->idannonce) }}" class="text-lbc-blue text-sm font-semibold hover:underline">
-                                Voir
-                            </a> -->
-                        </div>
-                        <!-- Actions (Voir / Supprimer) -->
+
                         <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-2">
                             <a href="{{ route('annonces.show', $annonce->idannonce) }}" class="text-gray-600 hover:text-lbc-blue text-sm font-semibold flex items-center gap-1 transition">
                                 <i class="fa-regular fa-eye"></i> Voir l'annonce
                             </a>
 
-                            <!-- FORMULAIRE DE SUPPRESSION -->
                             <form action="{{ route('annonces.destroy', $annonce->idannonce) }}" method="POST" 
                                   onsubmit="return confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette annonce ?\n\nCette action est irréversible et supprimera toutes les photos associées.');">
                                 @csrf
-                                @method('DELETE') <!-- Indispensable pour la méthode destroy -->
+                                @method('DELETE') 
                                 
                                 <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-bold flex items-center gap-1 transition px-2 py-1 rounded hover:bg-red-50">
                                     <i class="fa-regular fa-trash-can"></i> Supprimer

@@ -43,7 +43,6 @@
     }
     
             element.addEventListener('change', function(event) {
-        // Ici, "this" ou "event.target" représente l'input qui vient de changer
                 if(nnb.value == null || nnb.value == ""){
                     prixfinalp.innerText = "inserer une valeur dans une date d'entrer"
                 }

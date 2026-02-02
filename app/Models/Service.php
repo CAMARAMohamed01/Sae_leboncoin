@@ -9,7 +9,6 @@ class Service extends Model
 {
     use HasFactory;
 
-    // IMPORTANT : Force le nom de la table au singulier
     protected $table = 'service';
 
     protected $primaryKey = 'idservice';

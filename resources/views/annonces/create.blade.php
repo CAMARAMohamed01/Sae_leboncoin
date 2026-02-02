@@ -26,7 +26,6 @@
         <form action="{{ route('annonces.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
             @csrf
 
-            <!-- SECTION 1 : DÉTAILS DU BIEN -->
             <section>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Détails du bien</h2>
                 <p class="text-sm text-gray-500 mb-8 italic">
@@ -98,7 +97,6 @@
 
             <hr class="border-gray-200">
 
-            <!-- SECTION 2 : LOCALISATION -->
             <section>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Localisation</h2>
                 
@@ -137,7 +135,6 @@
 
             <hr class="border-gray-200">
 
-            <!-- SECTION 3 : PHOTOS MULTIPLES -->
             <section>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Photos</h2>
                 
@@ -147,7 +144,6 @@
                         
                         <label class="block cursor-pointer">
                             <span class="sr-only">Choisir des photos</span>
-                            <!-- Input File Multiple -->
                             <input type="file" name="photos[]" multiple required accept="image/png, image/jpeg, image/jpg"
                                    class="block w-full text-sm text-gray-500
                                    file:mr-4 file:py-2 file:px-6
@@ -170,7 +166,6 @@
                 </div>
             </section>
 
-            <!-- BOUTON DE SOUMISSION -->
             <div class="pt-6 flex justify-end">
                 <button type="submit" class="w-full md:w-auto bg-lbc-orange hover:bg-[#d64d0e] text-white font-bold py-4 px-10 rounded-xl shadow-md transition transform active:scale-[0.98] text-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> Publier mon annonce

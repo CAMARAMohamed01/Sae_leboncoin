@@ -16,15 +16,14 @@ class Avis extends Model
 
 
     protected $fillable = [
-        'idutilisateur',   // L'auteur (Locataire ou Expert)
-        'idreservation',   // La réservation liée (NULL si c'est un expert)
-        'idannonce',       // L'annonce concernée
+        'idutilisateur',   
+        'idreservation',   
+        'idannonce',       
         'note',            
         'commentaire', 
         'avis_expert'    
     ];
     
-    // Définition des valeurs par défaut pour les nouvelles instances
     protected $attributes = [
         'avis_expert' => 'En attente',
     ];
@@ -36,14 +35,11 @@ class Avis extends Model
 } 
 
 
-
-    // Relation vers l'auteur de l'avis
     public function auteur()
     {
         return $this->belongsTo(CompteUtilisateur::class, 'idutilisateur', 'idutilisateur');
     }
 
-    // Relation vers la réservation
     public function reservation()
     {
         return $this->belongsTo(Reservation::class, 'idreservation', 'idreservation');

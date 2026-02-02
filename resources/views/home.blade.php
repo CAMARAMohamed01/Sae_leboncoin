@@ -108,20 +108,16 @@
                                 @csrf
                                 <button type="submit" class="bg-white rounded-full p-2 shadow-md hover:scale-110 transition duration-200 focus:outline-none flex items-center justify-center w-8 h-8 group-btn cursor-pointer" title="Ajouter aux favoris">
                                     @if(Auth::user()->favoris->contains($annonce->idannonce))
-                                        <!-- Coeur Plein (Rouge) -->
                                         <i class="fa-solid fa-heart text-red-500 text-lg"></i>
                                     @else
-                                        <!-- Coeur Vide (Gris) -->
                                         <i class="fa-regular fa-heart text-gray-400 hover:text-red-500 text-lg"></i>
                                     @endif
                                 </button>
                             </form>
                         @else
-                            <!-- Si pas connecté, redirige vers login -->
                             <form action="{{ route('login') }}" method="GET">
                                 @csrf
                                 <button type="submit" class="bg-white rounded-full p-2 shadow-md hover:scale-110 transition duration-200 focus:outline-none flex items-center justify-center w-8 h-8 group-btn cursor-pointer" title="Se connecter pour ajouter aux favoris">
-                                        <!-- Coeur Vide (Gris) -->
                                         <i class="fa-regular fa-heart text-gray-400 hover:text-red-500 text-lg"></i>
                                 </button>
                             </form>
@@ -152,7 +148,6 @@
                 </div>
             </a>
         @empty
-            <!-- GESTION DE L'EXCEPTION : Affiché quand $dernieresAnnonces est vide -->
             <div class="col-span-4 text-center py-10 text-gray-500 border border-dashed rounded-lg border-gray-300 bg-gray-50 w-full">
                 <p class="text-lg font-semibold text-gray-700 mb-2">
                     <i class="fa-solid fa-triangle-exclamation mr-2 text-lbc-orange"></i>

@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-// 
 
-use App\Models\Particulier; // Assurez-vous que le modèle est importé
+
+use App\Models\Particulier; 
 use App\Models\Professionnel;
-//
+
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

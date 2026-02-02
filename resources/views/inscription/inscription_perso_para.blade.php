@@ -8,7 +8,6 @@
         
         <h1 class="text-3xl font-extrabold text-[#1f2d3d] mb-8 font-sans">Paramètres</h1>
 
-        <!-- {{-- Formulaire unique englobant tout --}} -->
         <form action="{{ route('inscription.perso.final') }}" method="POST" enctype="multipart/form-data">
         @csrf
     
@@ -78,7 +77,6 @@
                 <div class="form-group mb-4">
                     <label for="date_naissance_input" class="block text-sm font-bold text-[#1f2d3d] mb-2">Date de naissance <span class="text-lbc-orange">*</span></label>
                     <div class="relative">
-                        <!-- MODIFICATION ICI : max est fixé à la date du jour -->
                         <input type="date" 
                             id="date_naissance_input" 
                             name="date_naissance" 
@@ -134,16 +132,11 @@
                 Adresse
             </h2>
 
-            <!-- <div class="form-group mb-6">
-                <label for="adresse" class="block text-sm font-bold text-[#1f2d3d] mb-2">Adresse <span class="text-lbc-orange">*</span></label>
-                <input type="text" id="adresse" name="adresse" value="{{ old('adresse') }}" required class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:border-lbc-orange focus:ring-1 focus:ring-lbc-orange">
-            </div> -->
 
             <div class="form-group mb-6 relative"> 
                 <label for="adresse" class="block text-sm font-bold text-[#1f2d3d] mb-2">Adresse <span class="text-lbc-orange">*</span></label>
                 <input type="text" id="adresse" name="adresse" value="{{ old('adresse', $user->adresse->nomrue ?? '') }}" required autocomplete="off" class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:outline-none focus:border-lbc-orange focus:ring-1 focus:ring-lbc-orange">
                 
-                <!-- LISTE DES SUGGESTIONS (Cachée par défaut) -->
                 <div id="address-suggestions" class="absolute z-50 w-full bg-white border border-gray-300 rounded-b-lg shadow-lg hidden max-h-60 overflow-y-auto"></div>
             </div>
 
@@ -213,19 +206,16 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- GESTION DE LA DATE DE NAISSANCE (1905 - Aujourd'hui) ---
         const inputDateNaissance = document.getElementById('date_naissance_input');
 
         if (inputDateNaissance) {
-            // Calcul de la date d'aujourd'hui au format YYYY-MM-DD
             const today = new Date().toISOString().split('T')[0];
 
-            // Définition des contraintes
             inputDateNaissance.min = "1905-01-01";
-            inputDateNaissance.max = today; // La date max est maintenant dynamique
+            inputDateNaissance.max = today; 
         }
         
-        // --- 1. AUTOCOMPLÉTION ADRESSE ---
+        // --- AUTOCOMPLÉTION ADRESSE ---
         const addressInput = document.getElementById('adresse');
         const cityInput = document.getElementById('ville');
         const suggestionsBox = document.getElementById('address-suggestions');
@@ -236,7 +226,6 @@
                 clearTimeout(timeout);
                 const query = this.value;
 
-                // On attend que l'utilisateur ait tapé 3 caractères et on fait une pause de 300ms
                 if (query.length > 3) {
                     timeout = setTimeout(() => {
                         fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&autocomplete=1`)
@@ -249,19 +238,15 @@
                                     data.features.forEach(feature => {
                                         const div = document.createElement('div');
                                         div.className = 'px-4 py-2 cursor-pointer hover:bg-orange-50 text-sm text-gray-700 border-b border-gray-100 last:border-0';
-                                        div.textContent = feature.properties.label; // Ex: 9 rue arc en ciel
+                                        div.textContent = feature.properties.label; 
                                         
                                         div.addEventListener('click', function() {
-                                            // 1. Remplir le champ adresse (Numéro + Rue)
                                             addressInput.value = feature.properties.name; 
                                             
-                                            // 2. Remplir le champ ville (Ville + Code Postal)
-                                            // On remplit le format : "Ville (CP)"
                                             if(cityInput) {
                                                 cityInput.value = `${feature.properties.city} (${feature.properties.postcode})`;
                                             }
 
-                                            // 3. Cacher la liste
                                             suggestionsBox.classList.add('hidden');
                                         });
                                         
@@ -277,7 +262,6 @@
                 }
             });
 
-            // Cacher la liste si on clique ailleurs
             document.addEventListener('click', function(e) {
                 if (!addressInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
                     suggestionsBox.classList.add('hidden');
@@ -285,7 +269,7 @@
             });
         }
 
-        // --- 2. FORMATAGE DATE 
+        // --- FORMAT DATE 
         const dateInput = document.getElementById('date');
         if(dateInput) {
             dateInput.addEventListener('input', function(e) {
@@ -299,7 +283,7 @@
             });
         }
 
-        // --- 3. VALIDATION MOT DE PASSE 
+        // --- MOT DE PASSE 
         const passwordInput = document.getElementById('password');
         const statusText = document.getElementById('password-status');
         const reqLength = document.getElementById('req-length');

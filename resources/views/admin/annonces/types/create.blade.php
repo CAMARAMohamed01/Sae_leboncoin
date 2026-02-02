@@ -13,7 +13,6 @@
         <form action="{{ route('admin.annonces.types.store') }}" method="POST" class="space-y-8">
             @csrf
 
-            <!-- SECTION 1 : Définition -->
             <div>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Détails</h2>
                 <div class="form-group">
@@ -24,7 +23,6 @@
 
             <hr class="border-gray-100">
 
-            <!-- SECTION 2 : Liaison (Optionnel) -->
             <div>
                 <h2 class="text-lg font-bold text-gray-800 mb-4 uppercase text-xs tracking-wider">Réassigner des annonces (Optionnel)</h2>
                 <p class="text-sm text-gray-500 mb-4 bg-yellow-50 text-yellow-800 p-3 rounded-lg border border-yellow-200">

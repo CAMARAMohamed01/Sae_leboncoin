@@ -16,14 +16,13 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <!-- Carte Total -->
+
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <p class="text-sm font-bold text-gray-500 uppercase">Interactions Totales</p>
             <p class="text-3xl font-extrabold text-gray-900 mt-2">{{ $total }}</p>
             <p class="text-xs text-gray-400 mt-1">Clics enregistrés</p>
         </div>
 
-        <!-- Carte Acceptation -->
         <div class="bg-green-50 p-6 rounded-xl border border-green-100">
             <p class="text-sm font-bold text-green-600 uppercase">Taux d'acceptation</p>
             <div class="flex items-baseline gap-2 mt-2">
@@ -32,7 +31,6 @@
             </div>
         </div>
 
-        <!-- Carte Refus -->
         <div class="bg-red-50 p-6 rounded-xl border border-red-100">
             <p class="text-sm font-bold text-red-600 uppercase">Taux de refus</p>
             <div class="flex items-baseline gap-2 mt-2">
@@ -43,7 +41,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Bloc Statut Légal -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 h-full">
             <h2 class="text-lg font-bold text-gray-900 mb-4">État de la conformité</h2>
             
@@ -69,7 +66,6 @@
             </div>
         </div>
 
-        <!-- Bloc Derniers Clics -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-0 overflow-hidden h-full">
             <div class="p-6 border-b border-gray-100 bg-gray-50">
                 <h3 class="font-bold text-gray-900">Dernières interactions</h3>

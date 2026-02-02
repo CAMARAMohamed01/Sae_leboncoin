@@ -54,17 +54,15 @@
    ==========================================================================
 --}}
 <style>
-    /* Conteneur pour centrer et limiter la largeur */
     .reservation-container {
         font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         color: #1a1a1a;
         max-width: 600px;
-        margin: 0 auto; /* Centré horizontalement */
+        margin: 0 auto;
         padding: 20px;
         background-color: #fff;
     }
 
-    /* Titre */
     h1 {
         font-size: 24px;
         font-weight: 700;
@@ -73,9 +71,8 @@
         line-height: 1.3;
     }
 
-    /* Prix affiché */
     #prixloc {
-        color: #ec5a13; /* Orange LBC */
+        color: #ec5a13; 
         font-size: 20px;
         font-weight: 700;
         margin-bottom: 20px;
@@ -85,7 +82,6 @@
         border-radius: 8px;
     }
 
-    /* Labels des dates */
     p {
         font-size: 16px;
         font-weight: 600;
@@ -94,7 +90,6 @@
         color: #4a4a4a;
     }
 
-    /* Champs de date */
     .dateenter {
         width: 100%;
         box-sizing: border-box;
@@ -115,7 +110,6 @@
         box-shadow: 0 0 0 4px rgba(236, 90, 19, 0.15);
     }
 
-    /* Résultat (Prix total ou erreur) */
     #presultat {
         margin-top: 20px;
         padding: 10px;
@@ -124,7 +118,6 @@
         font-weight: bold;
     }
 
-    /* Bouton Réserver */
     #btnrerservation {
         display: block;
         width: 100%;
@@ -150,7 +143,6 @@
         transform: scale(0.98);
     }
 
-    /* Alertes */
     .alert-success {
         background-color: #e5f6fd;
         color: #016496;
@@ -161,20 +153,13 @@
     }
 </style>
 
-{{-- 
-   ==========================================================================
-   SECTION JAVASCRIPT (Logique de calcul)
-   ==========================================================================
---}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Sélection des éléments HTML
         const prixfinalp = document.querySelector("#presultat");
         const nnb = document.querySelector("#inputdatearriver");
         const nnb2 = document.querySelector("#inputdatedepart");
         const inputsDates = document.querySelectorAll(".dateenter");
         
-        // Conversion du prix unitaire en nombre (float) pour les calculs
         const prixInputVal = document.querySelector("#prixinput").value;
         const prixfixe = prixInputVal ? parseFloat(prixInputVal) : 0;
 
@@ -182,7 +167,6 @@
         const formReservation = document.querySelector("#form-reservation");
         const inputPriceFinal = document.querySelector("#prixfinalid");
 
-        // Fonction pour formater la date en YYYY-MM-DD
         function formaterDate(date) {
             const annee = date.getFullYear();
             const mois = String(date.getMonth() + 1).padStart(2, '0');
@@ -190,7 +174,6 @@
             return `${annee}-${mois}-${jour}`;
         }
 
-        // Configuration des dates min/max (aujourd'hui -> +2 ans)
         inputsDates.forEach(element => {
             if(element) {
                 const aujourdhui = new Date();
@@ -200,26 +183,21 @@
                 dateDansDeuxAns.setFullYear(aujourdhui.getFullYear() + 2);
                 element.max = formaterDate(dateDansDeuxAns);
                 
-                // Recalculer le prix à chaque changement de date
                 element.addEventListener('change', calculPrix);
             }
         });
 
-        // Fonction principale de calcul et validation
         function calculPrix() {
-            prixfinalp.innerText = ""; // Réinitialiser le message
+            prixfinalp.innerText = "";
 
-            // 1. Vérification si les champs sont remplis
             if(!nnb.value) {
                 prixfinalp.innerText = "Veuillez choisir une date d'arrivée.";
-                prixfinalp.style.color = "#cc3300"; // Rouge erreur
+                prixfinalp.style.color = "#cc3300"; 
                 return false;
             }
 
-            // --- NOUVELLE VERIFICATION ICI : Date arrivée < Aujourd'hui ---
             const dateArriveeCheck = new Date(nnb.value);
             const dateAujourdhuiCheck = new Date();
-            // On remet l'heure à 00:00:00 pour comparer uniquement les jours
             dateAujourdhuiCheck.setHours(0,0,0,0); 
 
             if(dateArriveeCheck < dateAujourdhuiCheck) {
@@ -227,7 +205,6 @@
                 prixfinalp.style.color = "#cc3300";
                 return false;
             }
-            // -------------------------------------------------------------
 
             if(!nnb2.value) {
                 prixfinalp.innerText = "Veuillez choisir une date de départ.";
@@ -235,45 +212,36 @@
                 return false;
             }
 
-            // 2. Vérification de la logique des dates
             if (nnb2.value <= nnb.value){
                 prixfinalp.innerText = "La date de départ doit être après la date d'arrivée.";
                 prixfinalp.style.color = "#cc3300";
                 return false;
             }
 
-            // 3. Calcul du prix
             const date1 = new Date(nnb.value);
             const date2 = new Date(nnb2.value);
             
-            // Différence en millisecondes convertie en jours
             const differenceTemps = date2 - date1;
             const jours = differenceTemps / (1000 * 3600 * 24);
             
             const total = prixfixe * jours;
             
-            // 4. Affichage et mise à jour de l'input caché
-            // Formatage du prix en français (ex: 120,50 €)
             const totalFormatte = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(total);
             
             prixfinalp.innerText = "Prix total pour " + jours + " nuit(s) : " + totalFormatte;
-            prixfinalp.style.color = "#188a42"; // Vert succès
+            prixfinalp.style.color = "#188a42"; 
             
-            inputPriceFinal.value = total; // Valeur envoyée au serveur
+            inputPriceFinal.value = total; 
             
             return true;
         }
 
-        // Gestion du click sur le bouton "Réserver"
         btnreserver.addEventListener("click", function(event) {
-            event.preventDefault(); // On empêche l'envoi immédiat
+            event.preventDefault();
             
-            // On lance le calcul. Si tout est valide (renvoie true)...
             if(calculPrix()) {
-                // ... on soumet le formulaire manuellement
                 formReservation.submit();
             } else {
-                // Sinon, on affiche une animation ou une erreur visuelle (optionnel)
                 console.log("Erreur de validation");
             }
         });

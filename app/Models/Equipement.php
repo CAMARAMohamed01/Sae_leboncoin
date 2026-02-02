@@ -31,6 +31,6 @@ class Equipement extends Model
             'contient', 
             'idequipement', 
             'idannonce'
-        )->withPivot('idtypeequipement'); // On récupère la colonne pivot supplémentaire
+        )->withPivot('idtypeequipement'); 
     }
 }

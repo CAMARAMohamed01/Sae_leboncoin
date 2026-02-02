@@ -38,7 +38,7 @@ class ComparatifController extends Controller
             ->join('prixperiode', 'annonce.idannonce', '=', 'prixperiode.idannonce')
             ->whereBetween('dates.dateacte', [$debutMois, $finMois])->sum('prixperiode.prix');
 
-        // --- GRAPHIQUE 1 (Lignes) ---
+        // --- GRAPHIQUE 1 ---
         $rawStats = Reservation::join('dates', 'reservation.'.$colonneDate, '=', 'dates.iddate')
             ->join('annonce', 'reservation.idannonce', '=', 'annonce.idannonce')
             ->join('typehebergement', 'annonce.idtypehebergement', '=', 'typehebergement.idtypehebergement')
@@ -56,7 +56,7 @@ class ComparatifController extends Controller
         $types = \App\Models\TypeHebergement::pluck('typehebergement')->all();
         $datasets = [];
 
-        // Dataset TOTAL
+        // TOTAL
         $dataTotal = [];
         foreach ($labels as $mois) {
             $dataTotal[] = (float) $rawStats->where('mois', $mois)->sum('total_ca');
@@ -90,9 +90,8 @@ class ComparatifController extends Controller
             ];
         }
 
-        // --- GRAPHIQUE 2 : TOP 10 + AUTRES (MODIFIÉ) ---
+        // --- GRAPHIQUE 2 ---
         
-        // 1. On récupère TOUS les résultats (on enlève ->take(7))
         $allOwnersRaw = Reservation::join('annonce', 'reservation.idannonce', '=', 'annonce.idannonce')
             ->join('prixperiode', 'annonce.idannonce', '=', 'prixperiode.idannonce')
             ->select(
@@ -104,10 +103,8 @@ class ComparatifController extends Controller
             ->orderBy('chiffre_affaires', 'desc')
             ->get();
 
-        // Tableau temporaire pour stocker les données avant le tri final
         $finalStats = [];
 
-        // 2. Traitement des 10 premiers
         foreach ($allOwnersRaw->take(10) as $stat) {
             $nomAffiche = "User #" . $stat->idutilisateur;
             try {
@@ -130,10 +127,8 @@ class ComparatifController extends Controller
             ];
         }
 
-        // 3. Calcul de "Autres"
         $others = $allOwnersRaw->skip(10);
         if ($others->count() > 0) {
-            // On ajoute "Autres" à la liste
             $finalStats[] = [
                 'label' => 'Autres (' . $others->count() . ' user' . ($others->count() > 1 ? 's' : '') . ')',
                 'revenue' => (float) $others->sum('chiffre_affaires'),
@@ -141,12 +136,10 @@ class ComparatifController extends Controller
             ];
         }
 
-        // 4. TRI FINAL : On retrie TOUT le tableau (y compris "Autres") par revenus décroissants
         usort($finalStats, function ($a, $b) {
-            return $b['revenue'] <=> $a['revenue']; // Tri décroissant (desc)
+            return $b['revenue'] <=> $a['revenue']; 
         });
 
-        // 5. Extraction vers les colonnes séparées pour ChartJS
         $ownerLabels = array_column($finalStats, 'label');
         $ownerRevenue = array_column($finalStats, 'revenue');
         $ownerCount = array_column($finalStats, 'count');
@@ -161,33 +154,32 @@ class ComparatifController extends Controller
                 'ville.nomville',
                 'adresse.latitude',
                 'adresse.longitude',
-                DB::raw('SUM(prixperiode.prix) as total_ca'), // Le montant des ventes
+                DB::raw('SUM(prixperiode.prix) as total_ca'), s
                 DB::raw('COUNT(reservation.idreservation) as nb_resas')
             )
-            ->where('dates.dateacte', '>=', Carbon::now()->subMonths(12)->startOfMonth()) // Sur 12 mois
-            ->whereNotNull('adresse.latitude') // Sécurité si pas de GPS
+            ->where('dates.dateacte', '>=', Carbon::now()->subMonths(12)->startOfMonth()) 
+            ->whereNotNull('adresse.latitude') 
             ->whereNotNull('adresse.longitude')
             ->groupBy('annonce.idannonce', 'adresse.latitude', 'adresse.longitude', 'ville.nomville')
             ->get();
 
-        // On récupère le montant max pour calculer la taille relative des bulles (100% = plus grosse bulle)
         $maxRevenue = $geoData->max('total_ca') ?? 1;
 
         $topCities = $geoData->groupBy('nomville')->map(function ($group) {
             return [
                 'nomville' => $group->first()->nomville,
-                'total_ca' => $group->sum('total_ca'), // Somme des CA de toutes les annonces de la ville
+                'total_ca' => $group->sum('total_ca'), 
                 'nb_resas' => $group->sum('nb_resas'),
-                'nb_annonces' => $group->count() // Nombre d'annonces actives ayant vendu
+                'nb_annonces' => $group->count()
             ];
-        })->sortByDesc('total_ca')->take(5); // On garde le Top 5
+        })->sortByDesc('total_ca')->take(5);
 
         return view('comparatif.comparatif', compact(
             'reservationsMois', 'totalAnnonces', 'dernieresReservations', 'caEstime',
             'labels', 'datasets', 
             'ownerLabels', 'ownerRevenue', 'ownerCount',
             'geoData', 'maxRevenue', 
-            'topCities' // <--- NOUVELLE VARIABLE AJOUTÉE
+            'topCities'
         ));
     }
 }

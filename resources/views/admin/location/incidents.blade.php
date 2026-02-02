@@ -66,12 +66,10 @@
                         </div>
 
                         <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                            <!-- {{-- Bouton Contacter (Fictif pour l'instant) --}} -->
                             <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
                                 <i class="fa-regular fa-envelope mr-1"></i> Contacter les parties
                             </button>
 
-                            <!-- {{-- Bouton Classer sans suite --}} -->
                             <form action="{{ route('admin.location.classer', $incident->idincident) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir classer cet incident sans suite ? Il sera clôturé.');">
                                 @csrf
                                 <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-bold hover:bg-gray-900 transition shadow-sm flex items-center gap-2">

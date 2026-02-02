@@ -21,10 +21,10 @@ class CompteUtilisateur extends Authenticatable
         'statut_rgpd',
         'idphoto',
         'idadresse',
-        'telephone_verifie', // État de vérification
+        'telephone_verifie',
         'role',
-        'date_creation',          // creation du compte
-        'date_derniere_connexion' // derniere connexion
+        'date_creation',          
+        'date_derniere_connexion' 
     ];
 /// début hashage
     protected $hidden = [
@@ -42,7 +42,7 @@ class CompteUtilisateur extends Authenticatable
 
 
     public function isDPO() { return $this->role === 'dpo' || $this->role === 'admin'; }
-    // Service Immobilier (Expertise)
+
     public function isServiceImmobilier()
     {
         return $this->role === 'service immobilier' || $this->role === 'admin';
@@ -145,29 +145,32 @@ class CompteUtilisateur extends Authenticatable
     public function rechercherpersonne(){
         return $this->hasOne(Annonce::class, 'idutilisateur', 'idutilisateur');
     }
-    
-    // --- MÉTHODE D'ANONYMISATION ---
+    public function aDesActivites()
+    {
+        return $this->annonces()->exists() || $this->reservations()->exists();
+    }
+
     public function anonymiser()
     {
-        //  Anonymiser le Compte
+
         $this->emailutilisateur = 'anonyme_' . $this->idutilisateur . '@deleted.local';
         $this->telutilisateur = '0000000000';
         $this->motdepasse = 'DELETED';
-        $this->statut_rgpd = false; // Marqué comme non-conforme/supprimé
-        $this->idphoto = null; // Supprimer lien photo
+        $this->statut_rgpd = false; 
+        $this->idphoto = null; 
+        $this->role = 'utilisateur supprimé';
+        $this->telephone_verifie = false;
         $this->save();
 
-        // Anonymiser le Profil Particulier
         if ($this->particulier) {
             $this->particulier->update([
                 'nomparticulier' => 'Anonyme',
                 'prenomparticulier' => 'Utilisateur',
                 'telutilisateur' => '0000000000',
-                'datenaissance' => '1900-01-01', // Si possible
+                'datenaissance' => '1900-01-01', 
             ]);
         }
 
-        // Anonymiser le Profil Pro
         if ($this->professionnel) {
             $this->professionnel->update([
                 'nomprofessionnel' => 'Société Anonyme',
@@ -175,70 +178,55 @@ class CompteUtilisateur extends Authenticatable
             ]);
         }
 
-        // Supprimer l'adresse (Donnée perso)
         if ($this->adresse) {
-            // On peut détacher ou supprimer l'adresse
-            // $this->adresse->delete(); 
             $this->idadresse = null;
             $this->save();
+        }
+        if ($this->identite) {
+            $this->identite->delete();
         }
     }
 
     public function supprimerTotalement()
     {
-        // On utilise une transaction pour s'assurer que tout est supprimé ou rien
         \Illuminate\Support\Facades\DB::transaction(function () {
             
-            // 1. Supprimer les éléments liés au profil Particulier/Pro
             if ($this->particulier) $this->particulier->delete();
             if ($this->professionnel) $this->professionnel->delete();
             if ($this->locataire) $this->locataire->delete();
             if ($this->identite) $this->identite->delete();
 
-            // 2. Supprimer les annonces et leurs dépendances
             if ($this->annonces) {
                 foreach ($this->annonces as $annonce) {
-                    $annonce->photos()->delete();       // Supprime les photos
-                    $annonce->prixPeriodes()->delete(); // Supprime les prix
-                    $annonce->equipements()->detach();  // Détache les équipements
-                    $annonce->services()->detach();     // Détache les services
-                    $annonce->avis()->delete();         // Supprime les avis sur l'annonce
+                    $annonce->photos()->delete();       
+                    $annonce->prixPeriodes()->delete(); 
+                    $annonce->equipements()->detach();  
+                    $annonce->services()->detach();     
+                    $annonce->avis()->delete();         
                     
-                    // Si l'annonce a des réservations, il faut aussi les supprimer (ou les gérer)
-                    // Attention : cela peut être destructif pour l'historique des locataires
-                    // Ici on supprime tout radicalement
                     \App\Models\Reservation::where('idannonce', $annonce->idannonce)->delete();
                     
                     $annonce->delete();
                 }
             }
 
-            // 3. Supprimer les réservations faites par cet utilisateur (en tant que locataire)
             if ($this->reservations) {
                 foreach ($this->reservations as $res) {
-                    // Supprimer les règlements liés
                     \App\Models\Reglement::where('idreservation', $res->idreservation)->delete();
                     $res->delete();
                 }
             }
 
-            // 4. Supprimer les avis laissés par cet utilisateur
             \App\Models\Avis::where('idutilisateur', $this->idutilisateur)->delete();
 
-            // 5. Détacher les favoris
             $this->favoris()->detach();
 
-            // 6. Supprimer les demandes de suppression (RGPD)
             \App\Models\DemandeSuppression::where('idutilisateur', $this->idutilisateur)->delete();
 
-            // 7. Enfin, supprimer le compte lui-même
             $this->delete();
 
-            // 8. Supprimer l'adresse si elle est orpheline (Optionnel)
              if ($this->idadresse) {
                  $adresse = \App\Models\Adresse::find($this->idadresse);
-                 // Vérifier si personne d'autre n'utilise cette adresse avant de supprimer
-                 // (Code simplifié ici)
              }
         });
     }

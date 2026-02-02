@@ -6,7 +6,6 @@
 <div class="container mx-auto px-4 py-8">
     <div class="flex flex-col md:flex-row gap-8 max-w-5xl mx-auto">
         
-        <!-- SIDEBAR (Menu) -->
         <div class="w-full md:w-1/3 lg:w-1/4">
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
                 <div class="flex flex-col items-center text-center mb-6">
@@ -126,7 +125,6 @@
             </div>
         </div>
 
-        <!-- CONTENU PRINCIPAL -->
         <div class="w-full md:w-2/3 lg:w-3/4">
             <div class="space-y-6">
 
@@ -136,7 +134,6 @@
                     </div>
                 @endif
 
-                <!-- 1. Synthèse des données -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h1 class="text-2xl font-extrabold text-[#1f2d3d] mb-2 font-sans">
                         Mes données personnelles
@@ -187,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Zone de danger (Suppression) -->
                 <div class="bg-white rounded-xl shadow-sm border border-red-100 p-8 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
                     

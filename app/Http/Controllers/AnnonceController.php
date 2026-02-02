@@ -134,6 +134,7 @@ class AnnonceController extends Controller
         return view('annonces.show', compact('annonce', 'prixMin', 'annoncesSimilaires', 'detailProfessionnel', 'proprietaireperso'));
     }
 
+    // Pour compatibilité avec l'ancienne route (si besoin)
     public function showallannonces($id)
     {
         $annonce = Annonce::with([
@@ -278,7 +279,7 @@ class AnnonceController extends Controller
             $annonce->idutilisateur = Auth::id();
             $annonce->nbchambre = $request->chambres;
             $annonce->capacite = $request->capacite;
-            $annonce->statutannonce = 'En ligne';
+            $annonce->statutannonce = 'En attente';
             $annonce->save();
 
             $prix = new PrixPeriode();
@@ -332,7 +333,6 @@ class AnnonceController extends Controller
             $annonce->equipements()->detach(); 
             $annonce->services()->detach();
             
-            // Supprimer les Favoris (Table pivot)
             DB::table('mettre_au_favoris')->where('idannonce', $annonce->idannonce)->delete();
 
             
@@ -342,7 +342,6 @@ class AnnonceController extends Controller
             $reservations = Reservation::where('idannonce', $annonce->idannonce)->get();
             
             foreach ($reservations as $reservation) {
-                // Pour chaque réservation, on supprime ses dépendances d'abord (car RESTRICT)
                 
                 // Supprimer les règlements associés
                 Reglement::where('idreservation', $reservation->idreservation)->delete();
@@ -391,27 +390,21 @@ public function pagecalendrierreservation($id)
 }
 public function showcalendar(Request $request, $id)
     {
-        // 1. Récupérer l'annonce
         $annonce = Annonce::findOrFail($id);
 
-        // 2. Gestion de la date
         $dateActuelle = $request->has('date') 
                         ? Carbon::parse($request->date) 
                         : now();
         
-        // On se cale toujours sur le 1er du mois pour l'affichage correct
         $dateActuelle->startOfMonth();
 
         $datePrecedente = $dateActuelle->copy()->subMonth();
         $dateSuivante = $dateActuelle->copy()->addMonth();
 
-        // 3. Renvoi vers la BONNE vue
-        // Le dossier est 'calendrierreservation' et le fichier 'showdispocalendrier'
         return view('calendrierreservation.showdispocalendrier', compact('annonce', 'dateActuelle', 'datePrecedente', 'dateSuivante'));
     }
 public function showpaiement(Request $request, $id)
 {
-    // 1. Récupérer l'annonce
     $annonce = \App\Models\Annonce::findOrFail($id);
 
     return view('pagereservationpaiement.pagereservation', [

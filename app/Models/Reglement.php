@@ -13,9 +13,9 @@ class Reglement extends Model
     protected $fillable = [
         'idreservation',
         'idutilisateur',
-        'modereglement', // 'Carte', 'Virement', etc.
+        'modereglement', 
         'montant',
-        'statut_reglament' // 'Validé', 'En attente', etc.
+        'statut_reglament' 
     ];
 
     public function reservation()

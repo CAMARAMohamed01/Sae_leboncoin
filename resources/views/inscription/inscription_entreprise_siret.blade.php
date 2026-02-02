@@ -239,7 +239,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
 
-        // --- Récupération des éléments du DOM ---
         const siretDisplay = document.getElementById('siret_display');
         const societeInput = document.getElementById('societe');
         const adresseInput = document.getElementById('adresse');
@@ -250,12 +249,10 @@
         const submitButton = document.getElementById('submit-button');
         const siretHiddenInput = document.getElementById('siret_hidden');
         
-        // --- Éléments du Mot de Passe ---
         const togglePassword = document.getElementById('togglePassword');
         const toggleIcon = document.getElementById('toggleIcon');
         const passwordInput = document.getElementById('mdp');
 
-        // --- Gestion Afficher/Masquer Mot de Passe ---
         if (togglePassword && passwordInput && toggleIcon) {
             togglePassword.addEventListener('click', function () {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -271,7 +268,6 @@
             });
         }
 
-        // --- Formatage du Téléphone (2 2 2 2 2) ---
         const phoneInput = document.getElementById('telephone');
         if (phoneInput) {
             phoneInput.addEventListener('input', function(e) {
@@ -287,10 +283,8 @@
             });
         }
 
-        // Nettoyage du SIRET (garde uniquement les chiffres)
         const siret = siretHiddenInput.value.replace(/\D/g, '').trim();
 
-        // Fonction pour afficher des messages
         const updateStatus = (text, type) => {
             statusMsg.textContent = text;
             statusMsg.classList.remove('hidden', 'text-red-500', 'text-green-500', 'text-blue-500');
@@ -299,7 +293,6 @@
             else statusMsg.classList.add('text-blue-500');
         };
 
-        // --- FONCTIONNALITÉ SIRET (Autocomplétion) ---
         const fetchCompanyDetails = async (siret) => {
             if (!siret || siret.length !== 14) {
                 updateStatus("Veuillez vérifier le SIRET.", 'error');
@@ -322,22 +315,17 @@
 
                     societeInput.value = company.nom_complet || '';
 
-                    // ✅ CORRECTION ICI : Construction intelligente de l'adresse
-                    // On prend uniquement le numéro et le type de voie pour que ça rentre dans les 50 caractères
                     const numero = siege.numero_voie || '';
                     const typeVoie = siege.type_voie || '';
                     const libelleVoie = siege.libelle_voie || '';
                     
-                    // On assemble l'adresse propre (ex: "4 BOULEVARD DE MONS")
                     let adressePropre = `${numero} ${typeVoie} ${libelleVoie}`.trim();
                     
-                    // Fallback si jamais les champs détaillés sont vides
                     if (!adressePropre) {
-                         // On prend l'adresse complète et on coupe avant le code postal
                          adressePropre = (siege.adresse || '').split(siege.code_postal)[0].trim();
                     }
                     
-                    adresseInput.value = adressePropre; // C'est cette valeur courte qui ira en BDD
+                    adresseInput.value = adressePropre;
 
                     cpInput.value = siege.code_postal || '';
                     villeInput.value = siege.libelle_commune || '';
@@ -356,7 +344,6 @@
             }
         };
 
-        // DÉCLENCHE L'AUTOCOMPLÉTION AU CHARGEMENT si le SIRET est présent
         if (siret && siret.length === 14) {
             fetchCompanyDetails(siret);
         } else if (siret.length > 0) {

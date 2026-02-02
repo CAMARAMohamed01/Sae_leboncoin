@@ -217,14 +217,11 @@
         const checkboxes = document.querySelectorAll('.user-checkbox');
         const rows = document.querySelectorAll('.row-click-target');
 
-        // Gestion des dates dynamiques
         const dateLimiteInput = document.getElementById('date_limite');
         const dateConnexionInput = document.getElementById('date_connexion');
 
         if(dateLimiteInput && dateConnexionInput) {
-            // Si on change la date limite de création, 
-            // la date de dernière connexion ne devrait logiquement pas être antérieure
-            // (Bien que techniquement possible si on cherche "inactifs depuis")
+
             dateLimiteInput.addEventListener('change', function() {
                 if(this.value) {
                     dateConnexionInput.min = this.value;
@@ -234,14 +231,12 @@
             });
         }
 
-        // Tout cocher/décocher
         if(selectAll) {
             selectAll.addEventListener('change', function() {
                 checkboxes.forEach(cb => cb.checked = this.checked);
             });
         }
 
-        // Clic sur la ligne pour cocher
         rows.forEach(row => {
             row.addEventListener('click', function(e) {
                 if (e.target.type === 'checkbox') return;

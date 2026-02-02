@@ -179,7 +179,6 @@
         const inputEnd = document.getElementById('date_depart');
         const btnSubmit = document.getElementById('submit-btn');
         
-        // Inputs Voyageurs
         const inputAdulte = document.getElementById('nbadulte');
         const inputEnfant = document.getElementById('nbenfant');
         const capacityError = document.getElementById('capacity-error');
@@ -193,7 +192,6 @@
         const pricePerNight = {{ is_numeric($prixNuit) ? $prixNuit : 0 }}; 
         const feesPercentage = 0.10; 
 
-        // Fonction pour vérifier la capacité
         function checkCapacity() {
             const totalHumans = parseInt(inputAdulte.value || 0) + parseInt(inputEnfant.value || 0);
             
@@ -204,17 +202,14 @@
                 return false;
             } else {
                 capacityError.classList.add('hidden');
-                // On réactive le bouton seulement si les dates sont OK (géré par calculateTotal)
                 calculateTotal(); 
                 return true;
             }
         }
 
-        // Listeners sur les champs voyageurs
         if(inputAdulte) inputAdulte.addEventListener('input', checkCapacity);
         if(inputEnfant) inputEnfant.addEventListener('input', checkCapacity);
 
-        // ... (Suite logique dates inchangée) ...
         const formatDate = (date) => date.toISOString().split('T')[0];
         const today = new Date();
         const tomorrow = new Date(today);
@@ -227,10 +222,8 @@
             const startVal = inputStart.value;
             const endVal = inputEnd.value;
 
-            // On vérifie aussi la capacité avant de valider
             const totalHumans = parseInt(inputAdulte.value || 0) + parseInt(inputEnfant.value || 0);
             if (totalHumans > maxCapacity) {
-                // Si capacité dépassée, on ne calcule pas et on laisse le bouton désactivé
                 if(btnSubmit) {
                     btnSubmit.disabled = true;
                     btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');

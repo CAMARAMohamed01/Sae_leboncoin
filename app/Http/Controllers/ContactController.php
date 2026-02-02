@@ -20,7 +20,7 @@ class ContactController extends Controller
             'subject' => 'required|string|max:255',
             'email' => 'required|email',
             'message' => 'required|string|min:10',
-            'file-upload' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240', // Max 10MB
+            'file-upload' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 
         $filePath = null;

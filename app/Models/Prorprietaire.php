@@ -20,5 +20,4 @@ public function professionnel()  {
 public function annonces()
 {
     return $this->hasMany(Annonce::class, 'idProprietaire', 'idProprietaire'); 
-    // Assurez-vous que les clés correspondent à votre diagramme (idProprietaire)
 }

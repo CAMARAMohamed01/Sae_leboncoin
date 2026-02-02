@@ -33,12 +33,9 @@
                                 @php
                                     $photoUrl = null;
 
-                                    // 1. Essai direct sur le particulier
                                     if (optional($proprietaireperso->photo)->lienurl) {
                                         $photoUrl = $proprietaireperso->photo->lienurl;
                                     }
-                                    // 2. Essai via une relation parente (ex: compteUtilisateur, user, ou proprietaire)
-                                    // Si votre relation s'appelle autrement, adaptez ici (ex: ->user->photo)
                                     elseif (optional($proprietaireperso->proprietaire)->photo && optional($proprietaireperso->proprietaire->photo)->lienurl) {
                                         $photoUrl = $proprietaireperso->proprietaire->photo->lienurl;
                                     }

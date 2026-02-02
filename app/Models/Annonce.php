@@ -72,15 +72,10 @@ class Annonce extends Model
         return $this->belongsTo(Dates::class, 'iddate', 'iddate');
     }
 
-    // =========================================================
-    // CORRECTION ICI : Remplacement de belongsTo par hasMany
-    // =========================================================
     public function prixPeriodes()
     {
-        // Une annonce A PLUSIEURS périodes de prix
         return $this->hasMany(PrixPeriode::class, 'idannonce', 'idannonce');
     }
-    // =========================================================
 
     public function rechercherpersonne(){
         return $this->belongsTo(Particulier::class, 'idutilisateur', 'idutilisateur');
@@ -131,20 +126,17 @@ class Annonce extends Model
     {
         $joursOccupes = [];
 
-        // On prend les réservations qui bloquent le calendrier
         $reservations = $this->reservations()
             ->whereIn('statut_reservation', ['Acceptée', 'En attente'])
-            ->with(['dateDebut', 'dateFin']) // On charge les dates liées
+            ->with(['dateDebut', 'dateFin']) 
             ->get();
 
         foreach ($reservations as $resa) {
-            // Sécurité si les dates sont manquantes
             if (!$resa->dateDebut || !$resa->dateFin) continue;
 
             $debut = \Carbon\Carbon::parse($resa->dateDebut->dateacte);
             $fin = \Carbon\Carbon::parse($resa->dateFin->dateacte);
 
-            // On boucle du début à la fin pour ajouter chaque jour au tableau
             while ($debut->lte($fin)) {
                 $joursOccupes[] = $debut->format('Y-m-d');
                 $debut->addDay();

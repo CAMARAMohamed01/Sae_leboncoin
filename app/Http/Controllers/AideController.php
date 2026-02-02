@@ -167,16 +167,13 @@ class AideController extends Controller
     // LA NOUVELLE FONCTION DE RECHERCHE
     public function search(Request $request)
     {
-        $query = $request->input('q'); // Ce que le mec a tapé
+        $query = $request->input('q'); 
         $results = [];
         $data = $this->getFaqData();
 
-        // Si la recherche n'est pas vide, on fouille partout
         if ($query) {
             foreach ($data as $catKey => $category) {
                 foreach ($category['faqs'] as $faq) {
-                    // On cherche dans la Question (q) ET la Réponse (r)
-                    // stripos = recherche insensible à la casse (majuscule/minuscule on s'en fout)
                     if (stripos($faq['q'], $query) !== false || stripos($faq['r'], $query) !== false) {
                         // On ajoute la catégorie pour savoir d'où ça vient
                         $faq['category_slug'] = $catKey;

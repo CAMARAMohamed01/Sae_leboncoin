@@ -83,13 +83,8 @@ Route::get('/annonces/{id}', [AnnonceController::class, 'show'])
 
 Route::get('/professionnels/{id}', [ProfessionnelController::class, 'show'])->name('professionnels.show');
 
-
-
-
-
-// ------------------------------------
 // LE calendrier
-//-------------------------------------
+
 
 Route::get('/annonce/{id}/calendar', [AnnonceController::class, 'showcalendar'])->name('annonce.calendar');
 //Reservation 
@@ -113,7 +108,7 @@ Route::post('/plaintes/{id}/refus', [IncidentController::class, 'refus'])->name(
 
 
 // ---------------------------
-// 5. Inscription
+//  Inscription
 // ---------------------------
 Route::get('/inscription', function () {
      return view('inscription.inscription');
@@ -192,11 +187,6 @@ Route::post('/entreprise/siret', [EntrepriseController::class, 'store'])
 // Pages juridiques et gestion des cookies
 Route::post('/cookies/record', [ServiceJuridiqueController::class, 'recordChoice'])->name('cookies.record');
 
-
-
-
-
-// ---------------------------)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 // Processus de réservation
 Route::get('/annonces/{id}/reserver', [ReservationController::class, 'create'])->name('reservations.create');
@@ -297,7 +287,15 @@ Route::middleware(['auth'])->group(function () {
         
     Route::post('/admin/annonces/types', [ServiceTypeHebergementController::class, 'store'])
         ->name('admin.annonces.types.store');
-    // ---------------------------
+
+    // Service Annonce (Validation des annonces) 
+    Route::get('/admin/annonces/validation', [ServiceAnnonceController::class, 'listeValidation'])->name('admin.annonces.validation');
+    Route::post('/admin/annonces/validation/{id}/valider', [ServiceAnnonceController::class, 'validerAnnonce'])->name('admin.annonces.valider');
+    //Redirection de sécurité pour le refus
+    Route::post('/admin/annonces/validation/{id}/refuser', [ServiceAnnonceController::class, 'refuserAnnonce'])->name('admin.annonces.refuser');
+    Route::get('/admin/annonces/validation/{id}/refuser', function() { 
+        return redirect()->route('admin.annonces.validation'); 
+    });
 
     // --- SERVICE DPO (RGPD) ---
     Route::get('/admin/rgpd', [RGPDController::class, 'index'])->name('admin.rgpd.index');

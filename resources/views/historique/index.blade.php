@@ -49,8 +49,7 @@
                             
                             {{-- Bouton pour relancer la recherche --}}
                             <a href="{{ 
-                                route('recherche.index', [ 
-                                    // Utilise la relation si elle existe, sinon utilise les ID si vous les avez dans l'URL de recherche
+                                route('recherche.index', [                                     
                                     'localisation' => optional($recherche->ville)->nomville,
                                     
                                     'type_hebergement' => $recherche->idtypehebergement,
@@ -60,7 +59,6 @@
                                     'prix_max' => $recherche->prix_max,
                                     'chambres' => $recherche->nbchambre_min,
                                     
-                                    // Les valeurs des checkboxes doivent être 1 ou null/absent pour la relance
                                     'animaux' => $recherche->animaux_acceptes ? 1 : null,
                                     'fumeur' => $recherche->fumeurs_autorises ? 1 : null,
                                 ]) 

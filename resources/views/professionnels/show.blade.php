@@ -60,7 +60,6 @@
                 </div>
             </a>
         @empty
-            <!-- GESTION DE L'EXCEPTION : Affiché quand $dernieresAnnonces est vide -->
             <div class="col-span-4 text-center py-10 text-gray-500 border border-dashed rounded-lg border-gray-300 bg-gray-50 w-full">
                 <p class="text-lg font-semibold text-gray-700 mb-2">
                     <i class="fa-solid fa-triangle-exclamation mr-2 text-lbc-orange"></i>
@@ -77,45 +76,41 @@
 <style>
 
 .fiche-pro {
-    background-color: #ffffff; /* Fond blanc */
-    max-width: 600px;          /* Largeur max */
-    margin: 40px auto;         /* Centré au milieu de la page */
-    padding: 30px;             /* Espace intérieur */
-    border-radius: 12px;       /* Coins arrondis */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Ombre douce pour l'effet 3D */
+    background-color: #ffffff;
+    max-width: 600px;          
+    margin: 40px auto;         
+    padding: 30px;             
+    border-radius: 12px;       
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;               /* Texte gris foncé lisible */
+    color: #333;               
     border: 1px solid #e0e0e0;
 }
 
-/* Style de chaque ligne d'information */
+
 .fiche-pro p {
-    margin: 0;                 /* Enlève les marges par défaut */
-    padding: 15px 0;           /* Espace entre les lignes */
-    border-bottom: 1px solid #f0f0f0; /* Ligne de séparation grise claire */
+    margin: 0;                 
+    padding: 15px 0;           
+    border-bottom: 1px solid #f0f0f0; 
     font-size: 16px;
     line-height: 1.5;
-    display: flex;             /* Permet d'aligner si le texte est long */
-    justify-content: space-between; /* Ecarte le contenu si possible */
+    display: flex;             
+    justify-content: space-between; 
     align-items: center;
 }
 
-/* Enlève la ligne de séparation sous le dernier élément */
 .fiche-pro p:last-child {
     border-bottom: none;
 }
 
-/* Petit effet au survol de la souris pour rendre ça vivant */
 .fiche-pro p:hover {
     background-color: #fafafa;
-    padding-left: 10px; /* Petit décalage visuel */
+    padding-left: 10px; 
     padding-right: 10px;
     transition: all 0.3s ease;
     border-radius: 5px;
 }
 
-/* Astuce : Comme "nom de la societer" est écrit en minuscule dans ton code,
-   on utilise CSS pour mettre la première lettre en majuscule automatiquement */
 .fiche-pro p::first-letter {
     text-transform: uppercase;
 }

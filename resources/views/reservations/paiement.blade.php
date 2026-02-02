@@ -15,7 +15,6 @@
 
         <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-8">
             
-            <!-- GAUCHE : ACTIONS PAIEMENT -->
             <div class="flex-1">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
                     
@@ -41,7 +40,6 @@
                         </div>
                     </div>
 
-                    <!-- OPTION 1 : BOUTON STRIPE (OFFICIEL) -->
                     <form action="{{ route('reservations.payment.stripe', $reservation->idreservation) }}" method="POST">
                         @csrf
                         <button type="submit" class="w-full bg-[#6772e5] hover:bg-[#5469d4] text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition transform hover:-translate-y-1 active:scale-[0.99] text-lg flex justify-center items-center gap-3">
@@ -56,7 +54,6 @@
                         <i class="fa-brands fa-cc-amex"></i>
                     </div>
 
-                    <!-- OPTION 2 : SIMULATION (POUR VOS TESTS) -->
                     <div class="mt-8 pt-6 border-t border-gray-100">
                         <p class="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center justify-center gap-2">
                             <i class="fa-solid fa-flask"></i> Zone de test (Simulation)
@@ -78,7 +75,6 @@
                 </div>
             </div>
 
-            <!-- DROITE : RÉCAPITULATIF FINANCIER -->
             <div class="w-full md:w-1/3">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
                     <h2 class="text-lg font-bold text-gray-900 mb-4 pb-4 border-b border-gray-100">Récapitulatif</h2>

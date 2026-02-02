@@ -27,7 +27,6 @@
         </div>
     @endif
 
-    <!-- Affichage des erreurs de validation (ex: commentaire manquant)  -->
     @if($errors->any())
         <div class="mb-6 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
             <ul class="list-disc pl-5">
@@ -63,7 +62,6 @@
                         </div>
                     </div>
 
-                    <!-- le Contenu -->
                     <div class="p-6 flex-1 flex flex-col justify-between">
                         <div>
                             <div class="flex justify-between items-start">
@@ -91,19 +89,16 @@
                         
                         <div class="mt-2 pt-4 border-t border-gray-100">
                             
-                            <!-- bouttons (Visibles par défaut) -- -->
                             <div id="actions-initial-{{ $annonce->idannonce }}" class="flex flex-col sm:flex-row justify-between items-center gap-4">
                                 <a href="{{ route('annonces.show', $annonce->idannonce) }}" target="_blank" class="text-gray-600 hover:text-lbc-blue text-sm font-semibold flex items-center gap-1">
                                     <i class="fa-regular fa-eye"></i> Inspecter l'annonce
                                 </a>
 
                                 <div class="flex gap-3 w-full sm:w-auto">
-                                    <!-- Bouton OUVRE FORMULAIRE NÉGATIF -->
                                     <button type="button" onclick="showNegativeForm({{ $annonce->idannonce }})" class="flex-1 sm:flex-none bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2.5 rounded-lg text-sm font-bold transition flex justify-center items-center gap-2">
                                         <i class="fa-solid fa-thumbs-down"></i> Avis Négatif
                                     </button>
 
-                                    <!-- Bouton POSITIF (Direct) -->
                                     <form action="{{ route('admin.immobilier.avis', $annonce->idannonce) }}" method="POST" class="flex-1 sm:flex-none" onsubmit="return confirm('Confirmer l\'avis POSITIF pour cette annonce ?');">
                                         @csrf
                                         <input type="hidden" name="avis" value="Positif">
@@ -114,7 +109,6 @@
                                 </div>
                             </div>
 
-                            <!-- //formulaire avis negatif (Caché par défaut)  -->
                             <div id="form-negatif-{{ $annonce->idannonce }}" class="hidden bg-red-50 p-4 rounded-lg border border-red-100 mt-2">
                                 <form action="{{ route('admin.immobilier.avis', $annonce->idannonce) }}" method="POST">
                                     @csrf
@@ -142,7 +136,6 @@
     @endif
 </div>
 
-<!-- gerer l'Affichage du formulaire -->
 <script>
     function showNegativeForm(id) {
         document.getElementById('actions-initial-' + id).classList.add('hidden');

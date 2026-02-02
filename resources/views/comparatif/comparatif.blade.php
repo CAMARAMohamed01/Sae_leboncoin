@@ -189,8 +189,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- 1. Initialisation de la Carte ---
-        // On centre sur la France par défaut
         var mapSales = L.map('mapSales').setView([46.603354, 1.888334], 6);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -198,27 +196,21 @@
             maxZoom: 18
         }).addTo(mapSales);
 
-        // --- 2. Récupération des données PHP ---
         var locations = {!! json_encode($geoData) !!};
         var maxRev = {{ $maxRevenue }};
 
-        // --- 3. Création des Bulles ---
         locations.forEach(function(loc) {
             
-            // Calcul de la taille (Rayon)
-            // Min 5px, Max 25px en fonction du CA par rapport au Max
             var radiusSize = 5 + ((loc.total_ca / maxRev) * 25);
 
-            // Création du cercle
             var circle = L.circleMarker([loc.latitude, loc.longitude], {
-                color: '#ec5a13',       // Bordure Orange Leboncoin
-                fillColor: '#ec5a13',   // Remplissage Orange
-                fillOpacity: 0.6,       // Transparence pour voir les superpositions
-                weight: 1,              // Épaisseur bordure
-                radius: radiusSize      // TAILLE DYNAMIQUE
+                color: '#ec5a13',       
+                fillColor: '#ec5a13',   
+                fillOpacity: 0.6,       
+                weight: 1,              
+                radius: radiusSize      
             }).addTo(mapSales);
 
-            // Popup au clic
             var popupContent = `
                 <div class="text-center">
                     <b class="text-gray-900">${loc.nomville}</b><br>
@@ -239,7 +231,6 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         
-        // --- DÉBOGAGE (A voir dans la Console F12 du navigateur) ---
         const debugData = {
             labels: {!! json_encode($ownerLabels ?? []) !!},
             revenu: {!! json_encode($ownerRevenue ?? []) !!},
@@ -247,8 +238,6 @@
         };
         console.log("Données reçues pour le graphique :", debugData);
 
-        // --- GRAPHIQUE 1 : ÉVOLUTION ---
-        // Vérifie si l'élément existe pour éviter les erreurs
         const canvas1 = document.getElementById('revenueChart');
         if (canvas1) {
             new Chart(canvas1.getContext('2d'), {
@@ -267,27 +256,26 @@
             });
         }
 
-        // --- GRAPHIQUE 2 : TOP PROPRIÉTAIRES ---
         const canvas2 = document.getElementById('ownersChart');
         if (canvas2) {
             new Chart(canvas2.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: debugData.labels, // Utilise les variables sécurisées
+                    labels: debugData.labels, 
                     datasets: [
                         {
                             label: 'Chiffre d\'Affaires (€)',
                             data: debugData.revenu,
-                            backgroundColor: '#ec5a13', // Orange
+                            backgroundColor: '#ec5a13', 
                             order: 2,
                             yAxisID: 'y'
                         },
                         {
                             label: 'Nombre Réservations',
                             data: debugData.count,
-                            borderColor: '#1f2d3d', // Noir
+                            borderColor: '#1f2d3d', 
                             backgroundColor: 'white',
-                            type: 'line', // Ligne par-dessus les barres
+                            type: 'line', 
                             borderWidth: 2,
                             pointRadius: 4,
                             order: 1,
@@ -309,7 +297,7 @@
                             type: 'linear',
                             display: true,
                             position: 'right',
-                            grid: { drawOnChartArea: false }, // Cache la grille pour la lisibilité
+                            grid: { drawOnChartArea: false },
                             title: { display: true, text: 'Réservations' }
                         }
                     }
